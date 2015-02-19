@@ -2,15 +2,17 @@
   "name": "ex-mode",
   "main": "./lib/ex-mode",
   "version": "0.0.0",
-  "description": "A short description of your package",
+  "description": "Ex for Atom's vim-mode",
   "activationCommands": {
-    "atom-workspace": "ex-mode:toggle"
+    "atom-workspace": "ex-mode:open"
   },
-  "repository": "https://github.com/atom/ex-mode",
+  "repository": "https://github.com/lloeki/ex-mode",
   "license": "MIT",
   "engines": {
     "atom": ">=0.174.0 <2.0.0"
   },
   "dependencies": {
+    "underscore-plus": "1.x",
+    "event-kit": "^0.7.2"
   }
 }

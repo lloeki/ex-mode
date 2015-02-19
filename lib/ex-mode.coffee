@@ -1,33 +1,28 @@
-ExModeView = require './ex-mode-view'
-{CompositeDisposable} = require 'atom'
+GlobalExState = require './global-ex-state'
+ExState = require './ex-state'
+{Disposable, CompositeDisposable} = require 'event-kit'
 
 module.exports = ExMode =
-  exModeView: null
-  modalPanel: null
-  subscriptions: null
-
   activate: (state) ->
-    @exModeView = new ExModeView(state.exModeViewState)
-    @modalPanel = atom.workspace.addModalPanel(item: @exModeView.getElement(), visible: false)
+    @globalExState = new GlobalExState
+    @disposables = new CompositeDisposable
+    @exStates = new WeakMap
 
-    # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
-    @subscriptions = new CompositeDisposable
+    @disposables.add atom.workspace.observeTextEditors (editor) =>
+      return if editor.mini
 
-    # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'ex-mode:toggle': => @toggle()
+      element = atom.views.getView(editor)
+
+      if not @exStates.get(editor)
+        exState = new ExState(
+          element,
+          @globalExState
+        )
+
+        @exStates.set(editor, exState)
+
+        @disposables.add new Disposable =>
+          exState.destroy()
 
   deactivate: ->
-    @modalPanel.destroy()
-    @subscriptions.dispose()
-    @exModeView.destroy()
-
-  serialize: ->
-    exModeViewState: @exModeView.serialize()
-
-  toggle: ->
-    console.log 'ExMode was toggled!'
-
-    if @modalPanel.isVisible()
-      @modalPanel.hide()
-    else
-      @modalPanel.show()
+    @disposables.dispose()
