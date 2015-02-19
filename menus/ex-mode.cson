@@ -1,0 +1,22 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Toggle ex-mode'
+      'command': 'ex-mode:toggle'
+    }
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'ex-mode'
+      'submenu': [
+        {
+          'label': 'Toggle'
+          'command': 'ex-mode:toggle'
+        }
+      ]
+    ]
+  }
+]
