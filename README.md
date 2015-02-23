@@ -8,7 +8,17 @@ Install both [vim-mode](https://github.com/atom/vim-mode) and ex-mode. Type `:` 
 
 ## Extend
 
-See `lib/ex.coffee` to add more commands. Contributions are very welcome!
+Use the service to register commands, from your own package, or straight from `init.coffee`:
+
+```coffee
+# in Atom's init.coffee
+atom.packages.onDidActivatePackage (pack) ->
+  if pack.name == 'ex-mode'
+    Ex = pack.mainModule.provideEx()
+    Ex.registerCommand 'z', -> console.log("Zzzzzz...")
+```
+
+See `lib/ex.coffee` for some examples commands. Contributions are very welcome!
 
 ## Status
 

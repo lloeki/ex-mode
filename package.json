@@ -14,5 +14,13 @@
   "dependencies": {
     "underscore-plus": "1.x",
     "event-kit": "^0.7.2"
+  },
+  "providedServices": {
+    "ex-mode": {
+      "description": "Ex commands",
+      "versions": {
+        "0.20.0": "provideEx"
+      }
+    }
   }
 }

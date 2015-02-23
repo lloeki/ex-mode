@@ -13,7 +13,7 @@ class Command
     return unless input.characters.length > 0
     [command, args...] = input.characters.split(" ")
 
-    func = (new Ex)[command]
+    func = Ex.singleton()[command]
     if func?
       func(args...)
     else

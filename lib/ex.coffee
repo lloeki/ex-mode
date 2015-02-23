@@ -1,6 +1,12 @@
 path = require 'path'
 
 class Ex
+  @singleton: =>
+    @ex ||= new Ex
+
+  @registerCommand: (name, func) =>
+    @singleton()[name] = func
+
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 

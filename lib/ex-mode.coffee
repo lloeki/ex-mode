@@ -1,5 +1,6 @@
 GlobalExState = require './global-ex-state'
 ExState = require './ex-state'
+Ex = require './ex'
 {Disposable, CompositeDisposable} = require 'event-kit'
 
 module.exports = ExMode =
@@ -26,3 +27,6 @@ module.exports = ExMode =
 
   deactivate: ->
     @disposables.dispose()
+
+  provideEx: ->
+    registerCommand: Ex.registerCommand.bind(Ex)
