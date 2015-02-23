@@ -15,7 +15,7 @@ class Command
 
     func = (new Ex)[command]
     if func?
-      func(args)
+      func(args...)
     else
       throw new CommandError("#{input.characters}")
 
