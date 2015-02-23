@@ -18,6 +18,25 @@ class Ex
   tabe: (filePaths...) =>
     @tabedit(filePaths...)
 
+  tabnew: (filePaths...) =>
+    @tabedit(filePaths...)
+
+  tabclose: => @quit()
+
+  tabc: => @tabclose()
+
+  tabnext: ->
+    pane = atom.workspace.getActivePane()
+    pane.activateNextItem()
+
+  tabn: => @tabnext()
+
+  tabprevious: ->
+    pane = atom.workspace.getActivePane()
+    pane.activatePreviousItem()
+
+  tabp: => @tabprevious()
+
   write: (filePath) =>
     projectPath = atom.project.getPath()
     pane = atom.workspace.getActivePane()
