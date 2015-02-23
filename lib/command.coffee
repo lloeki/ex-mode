@@ -11,10 +11,11 @@ class Command
 
   execute: (input) ->
     return unless input.characters.length > 0
+    [command, args...] = input.characters.split(" ")
 
-    func = (new Ex)[input.characters]
+    func = (new Ex)[command]
     if func?
-      func()
+      func(args)
     else
       throw new CommandError("#{input.characters}")
 
