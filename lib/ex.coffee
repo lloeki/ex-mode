@@ -6,6 +6,8 @@ class Ex
       atom.workspace.getActivePane().saveActiveItemAs()
 
   w: => @write()
+  wa: ->
+    atom.workspace.saveAll()
 
   split: (filePaths) ->
     pane = atom.workspace.getActivePane()
