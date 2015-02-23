@@ -4,8 +4,7 @@ class Ex
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 
-  q: =>
-    @quit()
+  q: => @quit()
 
   tabedit: (filePaths...) ->
     pane = atom.workspace.getActivePane()
@@ -15,11 +14,9 @@ class Ex
     else
       atom.workspace.openURIInPane('', pane)
 
-  tabe: (filePaths...) =>
-    @tabedit(filePaths...)
+  tabe: (filePaths...) => @tabedit(filePaths...)
 
-  tabnew: (filePaths...) =>
-    @tabedit(filePaths...)
+  tabnew: (filePaths...) => @tabedit(filePaths...)
 
   tabclose: => @quit()
 
@@ -43,7 +40,7 @@ class Ex
 
   enew: => @edit()
 
-  write: (filePath) =>
+  write: (filePath) ->
     projectPath = atom.project.getPath()
     pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveEditor()
