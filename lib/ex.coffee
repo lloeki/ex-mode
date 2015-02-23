@@ -37,6 +37,12 @@ class Ex
 
   tabp: => @tabprevious()
 
+  edit: (filePath) => @tabedit(filePath) if filePath?
+
+  e: (filePath) => @edit(filePath)
+
+  enew: => @edit()
+
   write: (filePath) =>
     projectPath = atom.project.getPath()
     pane = atom.workspace.getActivePane()
