@@ -49,6 +49,7 @@ class ExState
         @history.unshift command
       catch e
         if (e instanceof CommandError)
+          atom.notifications.addError("Command error: #{e.message}")
           @emitter.emit('failed-to-execute')
         else
           throw e

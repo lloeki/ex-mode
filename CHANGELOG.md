@@ -1,3 +1,6 @@
+## next - C-C-C-Combo Edition
+* Alert on unknown command
+
 ## 0.3.0 - Extrovert Edition
 * Register new commands from the outside world
 * Added `:tabn`, `:tabp`, `:e`, `:enew`, and a few aliases
