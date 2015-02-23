@@ -1,4 +1,8 @@
-## 0.2.0 - Not-A-One-Trick-Pony Edition
+## 0.3.0 - Extrovert Edition
+* Register new commands from the outside world
+* Added `:tabn`, `:tabp`, `:e`, `:enew`, and a few aliases
+
+## 0.2.0 - NotAOneTrickPony Edition
 * Added `:quit`, `:tabedit`, `:wa`, `:split`, `:vsplit`
 * Commands can take arguments
 
