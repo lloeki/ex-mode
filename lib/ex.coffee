@@ -5,5 +5,7 @@ class Ex
     else
       atom.workspace.getActivePane().saveActiveItemAs()
   w: => @write()
+  wa: ->
+    atom.workspace.saveAll()
 
 module.exports = Ex
