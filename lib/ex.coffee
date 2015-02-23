@@ -1,30 +1,35 @@
+path = require 'path'
+
 class Ex
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
   q: =>
     @quit()
-  tabedit: (filenames) ->
-    if filenames? and filenames.length > 0
-      atom.open(pathsToOpen: filenames)
+  tabedit: (filePaths...) ->
+    pane = atom.workspace.getActivePane()
+    if filePaths? and filePaths.length > 0
+      for file in filePaths
+        do -> atom.workspace.openURIInPane file, pane
     else
-      atom.open()
-  tabe: (filenames) =>
-    @tabedit(filenames)
-  write: (close=false) =>
-    if close
-      nextAction = ->
-        atom.notifications.addSuccess("Saved and closed")
-        atom.workspace.getActivePane().destroyActiveItem()
-    else
-      nextAction = ->
-        atom.notifications.addSuccess("Saved")
-
+      atom.workspace.openURIInPane('', pane)
+  tabe: (filePaths...) =>
+    @tabedit(filePaths...)
+  write: (filePath) =>
+    projectPath = atom.project.getPath()
+    pane = atom.workspace.getActivePane()
+    editor = atom.workspace.getActiveEditor()
     if atom.workspace.getActiveTextEditor().getPath() isnt undefined
-      atom.workspace.getActivePane().saveItem(atom.workspace.getActivePane().getActiveItem(), nextAction)
+      if filePath?
+        editorPath = editor.getPath()
+        editor.saveAs(path.join(projectPath, filePath))
+        editor.buffer.setPath(editorPath)
+      else
+        editor.save()
     else
-      atom.workspace.getActivePane().saveActiveItemAs(nextAction)
-  w: => @write()
-  wq: =>
-    @write(close=true)
+      if filePath?
+        editor.saveAs(path.join(projectPath, filePath))
+      else
+        pane.saveActiveItemAs()
+  w: (filePath) => @write(filePath)
 
 module.exports = Ex
