@@ -1,5 +1,28 @@
 path = require 'path'
 
+trySave = (func) ->
+  deferred = Promise.defer()
+
+  try
+    func()
+    deferred.resolve()
+  catch error
+    if error.message.endsWith('is a directory')
+      atom.notifications.addWarning("Unable to save file: #{error.message}")
+    else if error.code is 'EACCES' and error.path?
+      atom.notifications.addWarning("Unable to save file: Permission denied '#{error.path}'")
+    else if error.code in ['EPERM', 'EBUSY', 'UNKNOWN', 'EEXIST'] and error.path?
+      atom.notifications.addWarning("Unable to save file '#{error.path}'", detail: error.message)
+    else if error.code is 'EROFS' and error.path?
+      atom.notifications.addWarning("Unable to save file: Read-only file system '#{error.path}'")
+    else if errorMatch = /ENOTDIR, not a directory '([^']+)'/.exec(error.message)
+      fileName = errorMatch[1]
+      atom.notifications.addWarning("Unable to save file: A directory in the path '#{fileName}' could not be written to")
+    else
+      throw error
+
+  deferred.promise
+
 class Ex
   @singleton: =>
     @ex ||= new Ex
@@ -47,23 +70,46 @@ class Ex
   enew: => @edit()
 
   write: (filePath) ->
+    deferred = Promise.defer()
+
     projectPath = atom.project.getPath()
     pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveEditor()
     if atom.workspace.getActiveTextEditor().getPath() isnt undefined
       if filePath?
         editorPath = editor.getPath()
-        editor.saveAs(path.join(projectPath, filePath))
+        fullPath = if path.isAbsolute(filePath)
+          filePath
+        else
+          path.join(projectPath, filePath)
+        trySave(-> editor.saveAs(fullPath))
+          .then ->
+            deferred.resolve()
         editor.buffer.setPath(editorPath)
       else
-        editor.save()
+        trySave(-> editor.save())
+          .then deferred.resolve
     else
       if filePath?
-        editor.saveAs(path.join(projectPath, filePath))
+        fullPath = if path.isAbsolute(filePath)
+          filePath
+        else
+          path.join(projectPath, filePath)
+        trySave(-> editor.saveAs(fullPath))
+          .then deferred.resolve
       else
-        pane.saveActiveItemAs()
+        fullPath = atom.showSaveDialogSync()
+        if fullPath?
+          trySave(-> editor.saveAs(fullPath))
+            .then deferred.resolve
 
-  w: (filePath) => @write(filePath)
+    deferred.promise
+
+  w: (filePath) =>
+    @write(filePath)
+
+  wq: (filePath) =>
+    @write(filePath).then => @quit()
 
   wa: ->
     atom.workspace.saveAll()

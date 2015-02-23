@@ -1,5 +1,6 @@
 ## next - C-C-C-Combo Edition
 * Alert on unknown command
+* Added `:wq`
 
 ## 0.3.0 - Extrovert Edition
 * Register new commands from the outside world
