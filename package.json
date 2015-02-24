@@ -15,6 +15,13 @@
     "underscore-plus": "1.x",
     "event-kit": "^0.7.2"
   },
+  "consumedServices": {
+    "vim-mode": {
+      "versions": {
+        "^0.33.0": "consumeVim"
+      }
+    }
+  },
   "providedServices": {
     "ex-mode": {
       "description": "Ex commands",
