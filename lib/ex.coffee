@@ -110,6 +110,8 @@ class Ex
 
   wq: (filePath) =>
     @write(filePath).then => @quit()
+  
+  x: => @wq()
 
   wa: ->
     atom.workspace.saveAll()
