@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "underscore-plus": "1.x",
-    "event-kit": "^0.7.2"
+    "event-kit": "^0.7.2",
+    "space-pen": "^5.1.1",
+    "atom-space-pen-views": "^2.0.4"
   },
   "consumedServices": {
     "vim-mode": {
