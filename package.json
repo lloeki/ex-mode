@@ -20,7 +20,7 @@
   "consumedServices": {
     "vim-mode": {
       "versions": {
-        "^0.33.0": "consumeVim"
+        "^0.1.0": "consumeVim"
       }
     }
   },
