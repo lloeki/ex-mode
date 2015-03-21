@@ -9,15 +9,21 @@ trySave = (func) ->
   catch error
     if error.message.endsWith('is a directory')
       atom.notifications.addWarning("Unable to save file: #{error.message}")
-    else if error.code is 'EACCES' and error.path?
-      atom.notifications.addWarning("Unable to save file: Permission denied '#{error.path}'")
-    else if error.code in ['EPERM', 'EBUSY', 'UNKNOWN', 'EEXIST'] and error.path?
-      atom.notifications.addWarning("Unable to save file '#{error.path}'", detail: error.message)
-    else if error.code is 'EROFS' and error.path?
-      atom.notifications.addWarning("Unable to save file: Read-only file system '#{error.path}'")
-    else if errorMatch = /ENOTDIR, not a directory '([^']+)'/.exec(error.message)
+    else if error.path?
+      if error.code is 'EACCES'
+        atom.notifications
+          .addWarning("Unable to save file: Permission denied '#{error.path}'")
+      else if error.code in ['EPERM', 'EBUSY', 'UNKNOWN', 'EEXIST']
+        atom.notifications.addWarning("Unable to save file '#{error.path}'",
+          detail: error.message)
+      else if error.code is 'EROFS'
+        atom.notifications.addWarning(
+          "Unable to save file: Read-only file system '#{error.path}'")
+    else if (errorMatch =
+        /ENOTDIR, not a directory '([^']+)'/.exec(error.message))
       fileName = errorMatch[1]
-      atom.notifications.addWarning("Unable to save file: A directory in the path '#{fileName}' could not be written to")
+      atom.notifications.addWarning("Unable to save file: A directory in the "+
+        "path '#{fileName}' could not be written to")
     else
       throw error
 
@@ -110,7 +116,7 @@ class Ex
 
   wq: (filePath) =>
     @write(filePath).then => @quit()
-  
+
   x: => @wq()
 
   wa: ->
