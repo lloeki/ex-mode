@@ -27,11 +27,11 @@ class Command
       unless mark?
         throw new CommandError('Mark ' + str + ' not set.')
       addr = mark.bufferMarker.range.end.row
-    else if str[0] == "/" # TODO: Parse forward search
+    else if str[0] == "/"
       addr = Find.findNext(@editor.buffer.lines, str[1...-1], curLine)
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
-    else if str[0] == "?" # TODO: Parse backwards search
+    else if str[0] == "?"
       addr = Find.findPrevious(@editor.buffer.lines, str[1...-1], curLine)
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
@@ -53,7 +53,8 @@ class Command
   execute: (input) ->
     @vimState = @exState.globalExState.vim?.getEditorState(@editor)
     # Command line parsing (mostly) following the rules at
-    # http://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html#tag_20_40_13_03
+    # http://pubs.opengroup.org/onlinepubs/9699919799/utilities
+    # /ex.html#tag_20_40_13_03
     # Steps 1/2: Leading blanks and colons are ignored.
     cl = input.characters
     cl = cl.replace(/^(:|\s)*/, '')
@@ -124,15 +125,43 @@ class Command
     # Step 5: Leading blanks are ignored
     cl = cl.trimLeft()
 
-    # Vim behavior: If no command is specified, go to the specified length
+    # Step 6a: If no command is specified, go to the last specified address
     if cl.length == 0
       @editor.setCursorBufferPosition([range[1], 0])
       return
 
-    func = Ex.singleton()[command]
-    if func?
-      func(args...)
+    # Ignore steps 6b and 6c since they only make sense for print commands and
+    # print doesn't make sense
+
+    # Ignore step 7a since flags are only useful for print
+
+    # Step 7b: :k<valid mark> is equal to :mark <valid mark> - only a-zA-Z is
+    # in vim-mode for now
+    if cl.length == 2 and cl[0] == 'k' and /[a-z]/i.test(cl[1])
+      command = 'mark'
+      args = cl[1]
+    else if not /[a-z]/i.test(cl[0])
+      command = cl[0]
+      args = cl[1..]
     else
-      throw new CommandError("#{input.characters}")
+      [m, command, args] = cl.match(/^(\w+)(.*)/)
+
+    # If the command matches an existing one exactly, execute that one
+    if func = Ex.singleton()[command]?
+      func(range, args)
+    else
+      # Step 8: Match command against existing commands
+      matching = ([name for name, val of Ex.singleton() when \
+        name.indexOf(command) == 0])
+
+      matching.sort()
+
+      command = matching[0]
+
+      func = Ex.singleton()[command]
+      if func?
+        func(range, args)
+      else
+        throw new CommandError("Not an editor command: #{input.characters}")
 
 module.exports = {Command, CommandError}
