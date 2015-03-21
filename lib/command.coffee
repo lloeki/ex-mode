@@ -11,27 +11,27 @@ class Command
     @viewModel = new ExViewModel(@)
 
   parseAddr: (str, curLine) ->
-    if str == '.'
+    if str is '.'
       addr = curLine
-    else if str == '$'
+    else if str is '$'
       # Lines are 0-indexed in Atom, but 1-indexed in vim.
       addr = @editor.getBuffer().lines.length - 1
     else if str[0] in ["+", "-"]
       addr = curLine + @parseOffset(str)
     else if not isNaN(str)
       addr = parseInt(str) - 1
-    else if str[0] == "'" # Parse Mark...
+    else if str[0] is "'" # Parse Mark...
       unless @vimState?
         throw new CommandError("Couldn't get access to vim-mode.")
       mark = @vimState.marks[str[1]]
       unless mark?
         throw new CommandError('Mark ' + str + ' not set.')
       addr = mark.bufferMarker.range.end.row
-    else if str[0] == "/"
+    else if str[0] is "/"
       addr = Find.findNext(@editor.buffer.lines, str[1...-1], curLine)
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
-    else if str[0] == "?"
+    else if str[0] is "?"
       addr = Find.findPrevious(@editor.buffer.lines, str[1...-1], curLine)
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
@@ -39,13 +39,13 @@ class Command
     return addr
 
   parseOffset: (str) ->
-    if str.length == 0
+    if str.length is 0
       return 0
-    if str.length == 1
+    if str.length is 1
       o = 1
     else
       o = parseInt(str[1..])
-    if str[0] == '+'
+    if str[0] is '+'
       return o
     else
       return -o
@@ -60,11 +60,11 @@ class Command
     cl = cl.replace(/^(:|\s)*/, '')
     return unless cl.length > 0
     # Step 3: If the first character is a ", ignore the rest of the line
-    if cl[0] == '"'
+    if cl[0] is '"'
       return
     # Step 4: Address parsing
     lastLine = @editor.getBuffer().lines.length - 1
-    if cl[0] == '%'
+    if cl[0] is '%'
       range = [0, lastLine]
       cl = cl[1..]
     else
@@ -126,7 +126,7 @@ class Command
     cl = cl.trimLeft()
 
     # Step 6a: If no command is specified, go to the last specified address
-    if cl.length == 0
+    if cl.length is 0
       @editor.setCursorBufferPosition([range[1], 0])
       return
 
@@ -137,7 +137,7 @@ class Command
 
     # Step 7b: :k<valid mark> is equal to :mark <valid mark> - only a-zA-Z is
     # in vim-mode for now
-    if cl.length == 2 and cl[0] == 'k' and /[a-z]/i.test(cl[1])
+    if cl.length is 2 and cl[0] is 'k' and /[a-z]/i.test(cl[1])
       command = 'mark'
       args = cl[1]
     else if not /[a-z]/i.test(cl[0])
@@ -152,7 +152,7 @@ class Command
     else
       # Step 8: Match command against existing commands
       matching = ([name for name, val of Ex.singleton() when \
-        name.indexOf(command) == 0])
+        name.indexOf(command) is 0])
 
       matching.sort()
 
