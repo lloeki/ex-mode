@@ -1,4 +1,5 @@
 path = require 'path'
+CommandError = require './command-error'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -32,6 +33,23 @@ trySave = (func) ->
 getFullPath = (filePath) ->
   return filePath if path.isAbsolute(filePath)
   return path.join(atom.project.getPath(), filePath)
+
+replaceGroups = (groups, replString) ->
+  arr = replString.split('')
+  offset = 0
+  cdiff = 0
+
+  while (m = replString.match(/(?:[^\\]|^)\\(\d)/))?
+    group = groups[m[1]] or ''
+    i = replString.indexOf(m[0])
+    l = m[0].length
+    replString = replString.slice(i + l)
+    arr[i + offset...i + offset + l] = (if l is 2 then '' else m[0][0]) +
+      group
+    arr = arr.join('').split ''
+    offset += i + l - group.length
+
+  return arr.join('').replace(/\\\\(\d)/, '\\$1')
 
 class Ex
   @singleton: =>
@@ -147,6 +165,57 @@ class Ex
       pane.splitUp(copyActiveItem: true)
 
   sp: (args...) => @split(args...)
+
+  substitute: (range, args) ->
+    args = args.trimLeft()
+    delim = args[0]
+    if /[a-z]/i.test(delim)
+      throw new CommandError(
+        "Regular expressions can't be delimited by letters")
+    delimRE = new RegExp("[^\\\\]#{delim}")
+    spl = []
+    args_ = args[1..]
+    while (i = args_.search(delimRE)) isnt -1
+      spl.push args_[..i]
+      args_ = args_[i + 2..]
+    if args_.length is 0 and spl.length is 3
+      throw new CommandError('Trailing characters')
+    else if args_.length isnt 0
+      spl.push args_
+    if spl.length > 3
+      throw new CommandError('Trailing characters')
+    spl[1] ?= ''
+    spl[2] ?= ''
+
+    try
+      pattern = new RegExp(spl[0], spl[2])
+    catch e
+      if e.message.indexOf('Invalid flags supplied to RegExp constructor') is 0
+        # vim only says 'Trailing characters', but let's be more descriptive
+        throw new CommandError("Invalid flags: #{e.message[45..]}")
+      else if e.message.indexOf('Invalid regular expression: ') is 0
+        throw new CommandError("Invalid RegEx: #{e.message[27..]}")
+      else
+        throw e
+
+    console.log pattern, [[range[0], 0]]
+    buffer = atom.workspace.getActiveTextEditor().buffer
+    # This adds an entry to the history for each replacement
+    for line in [range[0]..range[1]]
+      console.log line
+      buffer.scanInRange(pattern,
+        [[line, 0], [line, buffer.lines[line].length]],
+        ({match, matchText, range, stop, replace}) ->
+          replace(replaceGroups(match[..], spl[1]))
+      )
+    # This finds all matches in the buffer, sadly
+    # buffer.scanInRange(pattern,
+    #   [[range[0], 0], [range[1], buffer.lines[range[1]]].length],
+    #   ({match, matchText, range, stop, replace}) ->
+    #     console.log match, matchText
+    #   )
+
+  s: (args...) => @substitute(args...)
 
   vsplit: (range, args) ->
     args = args.trim()

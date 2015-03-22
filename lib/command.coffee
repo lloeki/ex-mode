@@ -1,10 +1,7 @@
 ExViewModel = require './ex-view-model'
 Ex = require './ex'
 Find = require './find'
-
-class CommandError
-  constructor: (@message) ->
-    @name = 'Command Error'
+CommandError = require './command-error'
 
 class Command
   constructor: (@editor, @exState) ->
@@ -164,4 +161,4 @@ class Command
       else
         throw new CommandError("Not an editor command: #{input.characters}")
 
-module.exports = {Command, CommandError}
+module.exports = Command
