@@ -10,14 +10,14 @@ class Command
   constructor: (@editor, @exState) ->
     @viewModel = new ExViewModel(@)
 
-  parseAddr: (str, curLine) ->
+  parseAddr: (str, curPos) ->
     if str is '.'
-      addr = curLine
+      addr = curPos.row
     else if str is '$'
       # Lines are 0-indexed in Atom, but 1-indexed in vim.
       addr = @editor.getBuffer().lines.length - 1
     else if str[0] in ["+", "-"]
-      addr = curLine + @parseOffset(str)
+      addr = curPos.row + @parseOffset(str)
     else if not isNaN(str)
       addr = parseInt(str) - 1
     else if str[0] is "'" # Parse Mark...
@@ -28,11 +28,11 @@ class Command
         throw new CommandError('Mark ' + str + ' not set.')
       addr = mark.bufferMarker.range.end.row
     else if str[0] is "/"
-      addr = Find.findNext(@editor.buffer.lines, str[1...-1], curLine)
+      addr = Find.findNextInBuffer(@editor.buffer, curPos, str[1...-1])
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
     else if str[0] is "?"
-      addr = Find.findPrevious(@editor.buffer.lines, str[1...-1], curLine)
+      addr = Find.findPreviousInBuffer(@editor.buffer, curPos, str[1...-1])
       unless addr?
         throw new CommandError('Pattern not found: ' + str[1...-1])
 
@@ -95,13 +95,13 @@ class Command
 
       [match, addr1, off1, addr2, off2] = cl.match(addrPattern)
 
-      curLine = @editor.getCursorBufferPosition().row
+      curPos = @editor.getCursorBufferPosition()
 
       if addr1?
-        address1 = @parseAddr(addr1, curLine)
+        address1 = @parseAddr(addr1, curPos)
       else
         # If no addr1 is given (,+3), assume it is '.'
-        address1 = curLine
+        address1 = curPos.row
       if off1?
         address1 += @parseOffset(off1)
 
@@ -109,7 +109,7 @@ class Command
         throw new CommandError('Invalid range')
 
       if addr2?
-        address2 = @parseAddr(addr2, curLine)
+        address2 = @parseAddr(addr2, curPos)
       if off2?
         address2 += @parseOffset(off2)
 
