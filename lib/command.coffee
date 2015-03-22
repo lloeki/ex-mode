@@ -147,7 +147,7 @@ class Command
       [m, command, args] = cl.match(/^(\w+)(.*)/)
 
     # If the command matches an existing one exactly, execute that one
-    if func = Ex.singleton()[command]?
+    if (func = Ex.singleton()[command])?
       func(range, args)
     else
       # Step 8: Match command against existing commands
