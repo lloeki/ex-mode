@@ -29,6 +29,10 @@ trySave = (func) ->
 
   deferred.promise
 
+getFullPath = (filePath) ->
+  return filePath if path.isAbsolute(filePath)
+  return path.join(atom.project.getPath(), filePath)
+
 class Ex
   @singleton: =>
     @ex ||= new Ex
@@ -42,7 +46,7 @@ class Ex
   q: => @quit()
 
   tabedit: (range, args) ->
-    args = args.trimLeft()
+    args = args.trim()
     filePaths = args.split(' ')
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
@@ -71,26 +75,32 @@ class Ex
 
   tabp: => @tabprevious()
 
-  edit: (range, filePath) => @tabedit(range, filePath) if filePath?
+  edit: (range, filePath) ->
+    filePath = filePath.trim()
+    if filePath.indexOf(' ') isnt -1
+      throw new CommandError('Only one file name allowed')
+    buffer = atom.workspace.getActiveEditor().buffer
+    filePath = buffer.getPath() if filePath is ''
+    buffer.setPath(getFullPath(filePath))
+    buffer.load()
 
   e: (args...) => @edit(args...)
 
-  enew: => @edit()
+  enew: ->
+    buffer = atom.workspace.getActiveEditor().buffer
+    buffer.setPath(undefined)
+    buffer.load()
 
   write: (range, filePath) ->
-    filePath = filePath.trimLeft()
+    filePath = filePath.trim()
     deferred = Promise.defer()
 
-    projectPath = atom.project.getPath()
     pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveEditor()
     if atom.workspace.getActiveTextEditor().getPath() isnt undefined
-      if filePath?
+      if filePath.length > 0
         editorPath = editor.getPath()
-        fullPath = if path.isAbsolute(filePath)
-          filePath
-        else
-          path.join(projectPath, filePath)
+        fullPath = getFullPath(filePath)
         trySave(-> editor.saveAs(fullPath))
           .then ->
             deferred.resolve()
@@ -99,11 +109,8 @@ class Ex
         trySave(-> editor.save())
           .then deferred.resolve
     else
-      if filePath?
-        fullPath = if path.isAbsolute(filePath)
-          filePath
-        else
-          path.join(projectPath, filePath)
+      if filePath.length > 0
+        fullPath = getFullPath(filePath)
         trySave(-> editor.saveAs(fullPath))
           .then deferred.resolve
       else
@@ -126,8 +133,10 @@ class Ex
     atom.workspace.saveAll()
 
   split: (range, args) ->
-    args = args.trimLeft()
-    filePaths = args.splitLeft()
+    args = args.trim()
+    filePaths = args.split(' ')
+    filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
+    console.log filePaths, filePaths is ['']
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       newPane = pane.splitUp()
@@ -140,8 +149,9 @@ class Ex
   sp: (args...) => @split(args...)
 
   vsplit: (range, args) ->
-    args = args.trimLeft()
+    args = args.trim()
     filePaths = args.split(' ')
+    filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       newPane = pane.splitLeft()
