@@ -41,7 +41,9 @@ class Ex
 
   q: => @quit()
 
-  tabedit: (filePaths...) ->
+  tabedit: (range, args) ->
+    args = args.trimLeft()
+    filePaths = args.split(' ')
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       for file in filePaths
@@ -49,9 +51,9 @@ class Ex
     else
       atom.workspace.openURIInPane('', pane)
 
-  tabe: (filePaths...) => @tabedit(filePaths...)
+  tabe: (args...) => @tabedit(args...)
 
-  tabnew: (filePaths...) => @tabedit(filePaths...)
+  tabnew: (args...) => @tabedit(args...)
 
   tabclose: => @quit()
 
@@ -69,13 +71,14 @@ class Ex
 
   tabp: => @tabprevious()
 
-  edit: (filePath) => @tabedit(filePath) if filePath?
+  edit: (range, filePath) => @tabedit(range, filePath) if filePath?
 
-  e: (filePath) => @edit(filePath)
+  e: (args...) => @edit(args...)
 
   enew: => @edit()
 
-  write: (filePath) ->
+  write: (range, filePath) ->
+    filePath = filePath.trimLeft()
     deferred = Promise.defer()
 
     projectPath = atom.project.getPath()
@@ -111,18 +114,20 @@ class Ex
 
     deferred.promise
 
-  w: (filePath) =>
-    @write(filePath)
+  w: (args...) =>
+    @write(args...)
 
-  wq: (filePath) =>
-    @write(filePath).then => @quit()
+  wq: (args...) =>
+    @write(args...).then => @quit()
 
   x: => @wq()
 
   wa: ->
     atom.workspace.saveAll()
 
-  split: (filePaths...) ->
+  split: (range, args) ->
+    args = args.trimLeft()
+    filePaths = args.splitLeft()
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       newPane = pane.splitUp()
@@ -132,9 +137,11 @@ class Ex
     else
       pane.splitUp(copyActiveItem: true)
 
-  sp: (filePaths...) => @split(filePaths...)
+  sp: (args...) => @split(args...)
 
-  vsplit: (filePaths...) ->
+  vsplit: (range, args) ->
+    args = args.trimLeft()
+    filePaths = args.split(' ')
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       newPane = pane.splitLeft()
@@ -144,6 +151,6 @@ class Ex
     else
       pane.splitLeft(copyActiveItem: true)
 
-  vsp: (filePaths...) => @vsplit(filePaths...)
+  vsp: (args...) => @vsplit(args...)
 
 module.exports = Ex
