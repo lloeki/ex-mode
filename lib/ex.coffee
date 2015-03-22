@@ -198,11 +198,9 @@ class Ex
       else
         throw e
 
-    console.log pattern, [[range[0], 0]]
     buffer = atom.workspace.getActiveTextEditor().buffer
     # This adds an entry to the history for each replacement
     for line in [range[0]..range[1]]
-      console.log line
       buffer.scanInRange(pattern,
         [[line, 0], [line, buffer.lines[line].length]],
         ({match, matchText, range, stop, replace}) ->
