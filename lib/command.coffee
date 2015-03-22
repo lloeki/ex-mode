@@ -25,16 +25,16 @@ class Command
         throw new CommandError("Couldn't get access to vim-mode.")
       mark = @vimState.marks[str[1]]
       unless mark?
-        throw new CommandError('Mark ' + str + ' not set.')
+        throw new CommandError("Mark #{str} not set.")
       addr = mark.bufferMarker.range.end.row
     else if str[0] is "/"
       addr = Find.findNextInBuffer(@editor.buffer, curPos, str[1...-1])
       unless addr?
-        throw new CommandError('Pattern not found: ' + str[1...-1])
+        throw new CommandError("Pattern not found: #{str[1...-1]}")
     else if str[0] is "?"
       addr = Find.findPreviousInBuffer(@editor.buffer, curPos, str[1...-1])
       unless addr?
-        throw new CommandError('Pattern not found: ' + str[1...-1])
+        throw new CommandError("Pattern not found: #{str[1...-1]}")
 
     return addr
 
