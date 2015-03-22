@@ -151,8 +151,8 @@ class Command
       func(range, args)
     else
       # Step 8: Match command against existing commands
-      matching = ([name for name, val of Ex.singleton() when \
-        name.indexOf(command) is 0])
+      matching = (name for name, val of Ex.singleton() when \
+        name.indexOf(command) is 0)
 
       matching.sort()
 
