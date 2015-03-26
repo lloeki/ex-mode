@@ -199,19 +199,14 @@ class Ex
         throw e
 
     buffer = atom.workspace.getActiveTextEditor().buffer
-    # This adds an entry to the history for each replacement
+    cp = buffer.history.createCheckpoint()
     for line in [range[0]..range[1]]
       buffer.scanInRange(pattern,
         [[line, 0], [line, buffer.lines[line].length]],
         ({match, matchText, range, stop, replace}) ->
           replace(replaceGroups(match[..], spl[1]))
       )
-    # This finds all matches in the buffer, sadly
-    # buffer.scanInRange(pattern,
-    #   [[range[0], 0], [range[1], buffer.lines[range[1]]].length],
-    #   ({match, matchText, range, stop, replace}) ->
-    #     console.log match, matchText
-    #   )
+    buffer.history.groupChangesSinceCheckpoint(cp)
 
   s: (args...) => @substitute(args...)
 
