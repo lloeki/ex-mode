@@ -1,6 +1,8 @@
-## next - C-C-C-Combo Edition
-* Alert on unknown command
+## 0.4.1 - C-C-C-Combo Edition
+* Added ex command parser, including ranges
 * Added `:wq`
+* Added `:s`
+* Alert on unknown or invalid command
 
 ## 0.3.0 - Extrovert Edition
 * Register new commands from the outside world
