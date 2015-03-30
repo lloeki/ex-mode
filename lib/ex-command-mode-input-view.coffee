@@ -28,14 +28,14 @@ class ExCommandModeInputView extends View
       @editor.find('input').on 'textInput', @autosubmit
     @editor.on 'core:confirm', @confirm
     @editor.on 'core:cancel', @cancel
-    @editor.find('input').on 'blur', @cancel
+    @editor.on 'blur', @cancel
 
   stopHandlingEvents: ->
     if @singleChar?
       @editor.find('input').off 'textInput', @autosubmit
     @editor.off 'core:confirm', @confirm
     @editor.off 'core:cancel', @cancel
-    @editor.find('input').off 'blur', @cancel
+    @editor.off 'blur', @cancel
 
   autosubmit: (event) =>
     @editor.setText(event.originalEvent.data)
