@@ -1,6 +1,7 @@
 {Emitter, Disposable, CompositeDisposable} = require 'event-kit'
 
-{Command, CommandError} = require './command'
+Command = require './command'
+CommandError = require './command-error'
 
 class ExState
   constructor: (@editorElement, @globalExState) ->

@@ -33,3 +33,4 @@ module.exports = ExMode =
 
   consumeVim: (vim) ->
     @vim = vim
+    @globalExState.setVim(vim)
