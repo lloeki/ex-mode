@@ -225,4 +225,8 @@ class Ex
 
   vsp: (args...) => @vsplit(args...)
 
+  delete: (range) ->
+    range = [[range[0], 0], [range[1] + 1, 0]]
+    atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
+
 module.exports = Ex
