@@ -145,7 +145,7 @@ class Ex
   wq: (args...) =>
     @write(args...).then => @quit()
 
-  x: => @wq()
+  x: (args...) => @wq(args...)
 
   wa: ->
     atom.workspace.saveAll()
