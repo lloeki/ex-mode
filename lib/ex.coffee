@@ -154,7 +154,6 @@ class Ex
     args = args.trim()
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
-    console.log filePaths, filePaths is ['']
     pane = atom.workspace.getActivePane()
     if filePaths? and filePaths.length > 0
       newPane = pane.splitUp()

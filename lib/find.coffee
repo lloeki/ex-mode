@@ -16,7 +16,6 @@ module.exports = {
 
   findPreviousInBuffer : (buffer, curPos, pattern) ->
     found = @findInBuffer(buffer, pattern)
-    console.log found, curPos
     less = (i for i in found when i.compare([curPos, curPos]) is -1)
     if less.length > 0
       return less[less.length - 1].start.row
