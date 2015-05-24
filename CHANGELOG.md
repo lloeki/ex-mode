@@ -1,3 +1,8 @@
+## 0.5.0
+* Comply with upcoming Atom API 1.0
+* Added `:d`
+* Fixes
+
 ## 0.4.1 - C-C-C-Combo Edition
 * Added ex command parser, including ranges
 * Added `:wq`
