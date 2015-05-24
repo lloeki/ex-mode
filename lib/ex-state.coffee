@@ -45,9 +45,9 @@ class ExState
   processOpStack: ->
     [command, input] = @opStack
     if input.characters.length > 0
+      @history.unshift command
       try
         command.execute(input)
-        @history.unshift command
       catch e
         if (e instanceof CommandError)
           atom.notifications.addError("Command error: #{e.message}")
