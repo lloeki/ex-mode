@@ -52,13 +52,16 @@ class Command
     # Command line parsing (mostly) following the rules at
     # http://pubs.opengroup.org/onlinepubs/9699919799/utilities
     # /ex.html#tag_20_40_13_03
+
     # Steps 1/2: Leading blanks and colons are ignored.
     cl = input.characters
     cl = cl.replace(/^(:|\s)*/, '')
     return unless cl.length > 0
+
     # Step 3: If the first character is a ", ignore the rest of the line
     if cl[0] is '"'
       return
+
     # Step 4: Address parsing
     lastLine = @editor.getBuffer().lines.length - 1
     if cl[0] is '%'
