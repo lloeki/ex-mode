@@ -97,7 +97,7 @@ class Ex
     filePath = filePath.trim()
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
-    buffer = atom.workspace.getActiveEditor().buffer
+    buffer = atom.workspace.getActiveTextEditor().buffer
     filePath = buffer.getPath() if filePath is ''
     buffer.setPath(getFullPath(filePath))
     buffer.load()
@@ -105,7 +105,7 @@ class Ex
   e: (args...) => @edit(args...)
 
   enew: ->
-    buffer = atom.workspace.getActiveEditor().buffer
+    buffer = atom.workspace.getActiveTextEditor().buffer
     buffer.setPath(undefined)
     buffer.load()
 
@@ -114,7 +114,7 @@ class Ex
     deferred = Promise.defer()
 
     pane = atom.workspace.getActivePane()
-    editor = atom.workspace.getActiveEditor()
+    editor = atom.workspace.getActiveTextEditor()
     if atom.workspace.getActiveTextEditor().getPath() isnt undefined
       if filePath.length > 0
         editorPath = editor.getPath()

@@ -1,10 +1,10 @@
-ExCommandModeInputView = require './ex-command-mode-input-view'
+ExCommandModeInputElement = require './ex-command-mode-input-element'
 
 class ViewModel
   constructor: (@command, opts={}) ->
     {@editor, @exState} = @command
 
-    @view = new ExCommandModeInputView(@, opts)
+    @view = new ExCommandModeInputElement().initialize(@, opts)
     @editor.commandModeInputView = @view
     @exState.onDidFailToExecute => @view.remove()
 

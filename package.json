@@ -9,7 +9,7 @@
   "repository": "https://github.com/lloeki/ex-mode",
   "license": "MIT",
   "engines": {
-    "atom": ">=0.174.0 <2.0.0"
+    "atom": ">=0.200.0 <2.0.0"
   },
   "dependencies": {
     "underscore-plus": "1.x",

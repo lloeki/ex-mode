@@ -6,11 +6,11 @@ class ExViewModel extends ViewModel
     super(@exCommand, class: 'command')
     @historyIndex = -1
 
-    @view.editor.on('core:move-up', @increaseHistoryEx)
-    @view.editor.on('core:move-down', @decreaseHistoryEx)
+    atom.commands.add(@view.editorElement, 'core:move-up', @increaseHistoryEx)
+    atom.commands.add(@view.editorElement, 'core:move-down', @decreaseHistoryEx)
 
   restoreHistory: (index) ->
-    @view.editor.setText(@history(index).value)
+    @view.editorElement.getModel().setText(@history(index).value)
 
   history: (index) ->
     @exState.getExHistoryItem(index)
@@ -24,7 +24,7 @@ class ExViewModel extends ViewModel
     if @historyIndex <= 0
       # get us back to a clean slate
       @historyIndex = -1
-      @view.editor.setText('')
+      @view.editorElement.getModel().setText('')
     else
       @historyIndex -= 1
       @restoreHistory(@historyIndex)
