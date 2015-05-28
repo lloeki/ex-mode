@@ -1,4 +1,5 @@
 path = require 'path'
+fs = require 'fs-plus'
 CommandError = require './command-error'
 
 trySave = (func) ->
@@ -31,6 +32,7 @@ trySave = (func) ->
   deferred.promise
 
 getFullPath = (filePath) ->
+  filePath = fs.normalize(filePath)
   return filePath if path.isAbsolute(filePath)
   return path.join(atom.project.getPath(), filePath)
 
