@@ -12,10 +12,11 @@
     "atom": ">=0.200.0 <2.0.0"
   },
   "dependencies": {
-    "underscore-plus": "1.x",
+    "atom-space-pen-views": "^2.0.4",
     "event-kit": "^0.7.2",
+    "fs-plus": "^2.8.1",
     "space-pen": "^5.1.1",
-    "atom-space-pen-views": "^2.0.4"
+    "underscore-plus": "1.x"
   },
   "consumedServices": {
     "vim-mode": {

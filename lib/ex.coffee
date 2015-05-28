@@ -1,4 +1,5 @@
 path = require 'path'
+fs = require 'fs-plus'
 CommandError = require './command-error'
 
 trySave = (func) ->
@@ -31,6 +32,7 @@ trySave = (func) ->
   deferred.promise
 
 getFullPath = (filePath) ->
+  filePath = fs.normalize(filePath)
   return filePath if path.isAbsolute(filePath)
   return path.join(atom.project.getPath(), filePath)
 
@@ -162,6 +164,28 @@ class Ex
           atom.workspace.openURIInPane file, newPane
     else
       pane.splitUp(copyActiveItem: true)
+
+  set: (args...) ->
+    editor = ->
+        atom.workspace.getActiveTextEditor()
+
+    arg   = args[1]
+    regex = /\s*(\w+)(?:\s*=\s*([\d\w]+)\s*|(!))/
+    matches = arg.match regex
+    return unless matches?
+
+    [whole, option, value, bang] = matches
+
+    switch option
+      when 'tw'
+        editor().setTabLength(parseInt(value))
+      when 'ft'
+        regex = new RegExp "(source|text)\.#{value}$"
+        lowerCaseName = value.toLowerCase()
+        for name, grammar of atom.grammars.grammarsByScopeName
+          grammarName = grammar.name.toLowerCase()
+          if name.match(regex) or lowerCaseName is grammarName
+            editor().setGrammar(grammar)
 
   sp: (args...) => @split(args...)
 
