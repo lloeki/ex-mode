@@ -1,5 +1,6 @@
 path = require 'path'
 CommandError = require './command-error'
+fs = require 'fs'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -29,6 +30,10 @@ trySave = (func) ->
       throw error
 
   deferred.promise
+
+saveAs = (filePath) ->
+  editor = atom.workspace.getActiveTextEditor()
+  fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
   return filePath if path.isAbsolute(filePath)
@@ -119,7 +124,7 @@ class Ex
       if filePath.length > 0
         editorPath = editor.getPath()
         fullPath = getFullPath(filePath)
-        trySave(-> editor.saveAs(fullPath))
+        trySave(-> saveAs(fullPath))
           .then ->
             deferred.resolve()
         editor.buffer.setPath(editorPath)
@@ -129,7 +134,7 @@ class Ex
     else
       if filePath.length > 0
         fullPath = getFullPath(filePath)
-        trySave(-> editor.saveAs(fullPath))
+        trySave(-> saveAs(fullPath))
           .then deferred.resolve
       else
         fullPath = atom.showSaveDialogSync()
