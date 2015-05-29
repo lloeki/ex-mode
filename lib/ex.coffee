@@ -104,10 +104,10 @@ class Ex
     filePath = filePath.trim()
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
-
-    filePath = getFullPath filePath
-    atom.workspace.open(filePath)
-
+    buffer = atom.workspace.getActiveTextEditor().buffer
+    filePath = buffer.getPath() if filePath is ''
+    buffer.setPath(getFullPath(filePath))
+    buffer.load()
 
   e: (args...) => @edit(args...)
 
