@@ -37,6 +37,7 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
+  filePath = fs.normalize filePath
   return filePath if path.isAbsolute(filePath)
   return path.join(atom.project.getPath(), filePath)
 
