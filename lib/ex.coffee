@@ -1,6 +1,7 @@
 path = require 'path'
+fs   = require 'fs-plus'
+
 CommandError = require './command-error'
-fs = require 'fs-plus'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -103,7 +104,7 @@ class Ex
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
 
-    filePath = fs.normalize filePath
+    filePath = getFullPath filePath
     atom.workspace.open(filePath)
 
 
