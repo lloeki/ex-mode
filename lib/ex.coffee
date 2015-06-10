@@ -190,6 +190,9 @@ class Ex
       throw new CommandError('Trailing characters')
     spl[1] ?= ''
     spl[2] ?= ''
+    notDelimRE = new RegExp("\\\\#{delim}", 'g')
+    spl[0] = spl[0].replace(notDelimRE, delim)
+    spl[1] = spl[1].replace(notDelimRE, delim)
 
     try
       pattern = new RegExp(spl[0], spl[2])
