@@ -203,14 +203,13 @@ class Ex
         throw e
 
     buffer = atom.workspace.getActiveTextEditor().buffer
-    cp = buffer.history.createCheckpoint()
-    for line in [range[0]..range[1]]
-      buffer.scanInRange(pattern,
-        [[line, 0], [line, buffer.lines[line].length]],
-        ({match, matchText, range, stop, replace}) ->
-          replace(replaceGroups(match[..], spl[1]))
-      )
-    buffer.history.groupChangesSinceCheckpoint(cp)
+    atom.workspace.getActiveTextEditor().transact ->
+      for line in [range[0]..range[1]]
+        buffer.scanInRange(pattern,
+          [[line, 0], [line, buffer.lines[line].length]],
+          ({match, matchText, range, stop, replace}) ->
+            replace(replaceGroups(match[..], spl[1]))
+        )
 
   s: (args...) => @substitute(args...)
 
