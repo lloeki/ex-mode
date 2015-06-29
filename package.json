@@ -15,7 +15,8 @@
     "underscore-plus": "1.x",
     "event-kit": "^0.7.2",
     "space-pen": "^5.1.1",
-    "atom-space-pen-views": "^2.0.4"
+    "atom-space-pen-views": "^2.0.4",
+    "fs-plus": "^2.2.8"
   },
   "consumedServices": {
     "vim-mode": {

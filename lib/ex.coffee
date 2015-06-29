@@ -1,6 +1,7 @@
 path = require 'path'
+fs   = require 'fs-plus'
+
 CommandError = require './command-error'
-fs = require 'fs'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -36,8 +37,9 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
+  filePath = fs.normalize filePath
   return filePath if path.isAbsolute(filePath)
-  return path.join(atom.project.getPath(), filePath)
+  return path.join(atom.project.getPaths()[0], filePath)
 
 replaceGroups = (groups, replString) ->
   arr = replString.split('')
