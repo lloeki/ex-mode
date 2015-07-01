@@ -37,7 +37,7 @@ saveAs = (filePath) ->
 
 getFullPath = (filePath) ->
   return filePath if path.isAbsolute(filePath)
-  return path.join(atom.project.getPath(), filePath)
+  return path.join(atom.project.getPaths()[0], filePath)
 
 replaceGroups = (groups, replString) ->
   arr = replString.split('')
