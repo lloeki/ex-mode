@@ -1,6 +1,7 @@
 path = require 'path'
 CommandError = require './command-error'
 fs = require 'fs'
+VimOption = require './vim-option'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -231,5 +232,28 @@ class Ex
   delete: (range) ->
     range = [[range[0], 0], [range[1] + 1, 0]]
     atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
+
+  set: (range, args) ->
+    args = args.trim()
+    if args == ""
+      throw new CommandError("No option specified")
+    options = args.split(' ')
+    for option in options
+      do ->
+        if option.includes("=")
+          nameValPair = option.split("=")
+          if (nameValPair.length != 2)
+            throw new CommandError("Wrong option format. [name]=[value] format is expected")
+          optionName = nameValPair[0]
+          optionValue = nameValPair[1]
+          optionProcessor = VimOption.singleton()[optionName]
+          if not optionProcessor?
+            throw new CommandError("No such option: #{optionName}")
+          optionProcessor(optionValue)
+        else
+          optionProcessor = VimOption.singleton()[option]
+          if not optionProcessor?
+            throw new CommandError("No such option: #{option}")
+          optionProcessor()
 
 module.exports = Ex
