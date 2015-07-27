@@ -36,8 +36,16 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
-  return filePath if path.isAbsolute(filePath)
-  return path.join(atom.project.getPath(), filePath)
+  if filePath is ''
+    throw new Error
+  if path.isAbsolute(filePath)
+    return filePath
+  else if atom.workspace.getActiveTextEditor().getPath()?
+    return path.join(path.dirname(atom.workspace.getActiveTextEditor().getPath()), filePath)
+  else if atom.project.getPaths()[0]?
+    return path.join(atom.project.getPaths()[0], filePath)
+  else
+    throw new Error
 
 replaceGroups = (groups, replString) ->
   arr = replString.split('')
@@ -99,7 +107,7 @@ class Ex
   tabp: => @tabprevious()
 
   edit: (range, filePath) ->
-    filePath = filePath.trim()
+    filePath = path.normalize(filePath.trim())
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
     buffer = atom.workspace.getActiveTextEditor().buffer
@@ -115,32 +123,18 @@ class Ex
     buffer.load()
 
   write: (range, filePath) ->
-    filePath = filePath.trim()
+    filePath = path.normalize(filePath.trim())
     deferred = Promise.defer()
 
-    pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveTextEditor()
-    if atom.workspace.getActiveTextEditor().getPath() isnt undefined
-      if filePath.length > 0
-        editorPath = editor.getPath()
-        fullPath = getFullPath(filePath)
-        trySave(-> saveAs(fullPath))
-          .then ->
-            deferred.resolve()
-        editor.buffer.setPath(editorPath)
-      else
-        trySave(-> editor.save())
-          .then deferred.resolve
-    else
-      if filePath.length > 0
-        fullPath = getFullPath(filePath)
-        trySave(-> saveAs(fullPath))
-          .then deferred.resolve
-      else
-        fullPath = atom.showSaveDialogSync()
-        if fullPath?
-          trySave(-> editor.saveAs(fullPath))
-            .then deferred.resolve
+    try
+      fullPath = getFullPath(filePath)
+    catch error
+      fullPath = atom.showSaveDialogSync()
+    if fullPath?
+      trySave(-> editor.saveAs(fullPath))
+        .then deferred.resolve
+      editor.buffer.setPath(fullPath)
 
     deferred.promise
 
