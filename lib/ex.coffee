@@ -1,6 +1,6 @@
 path = require 'path'
 CommandError = require './command-error'
-fs = require 'fs'
+fs = require 'fs-plus'
 VimOption = require './vim-option'
 
 trySave = (func) ->
@@ -108,7 +108,7 @@ class Ex
   tabp: => @tabprevious()
 
   edit: (range, filePath) ->
-    filePath = path.normalize(filePath.trim())
+    filePath = fs.normalize(filePath.trim())
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
     buffer = atom.workspace.getActiveTextEditor().buffer
@@ -124,7 +124,7 @@ class Ex
     buffer.load()
 
   write: (range, filePath) ->
-    filePath = path.normalize(filePath.trim())
+    filePath = fs.normalize(filePath.trim())
     deferred = Promise.defer()
 
     editor = atom.workspace.getActiveTextEditor()
