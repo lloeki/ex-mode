@@ -1,3 +1,8 @@
+## 0.6.0
+* No project/multiple projects paths (uses first one)
+* Support for :set
+* Fixes
+
 ## 0.5.0
 * Comply with upcoming Atom API 1.0
 * Added `:d`
