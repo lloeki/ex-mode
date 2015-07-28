@@ -37,16 +37,19 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
-  if filePath is ''
-    throw new Error
+  editor = atom.workspace.getActiveTextEditor()
   if path.isAbsolute(filePath)
     return filePath
-  else if atom.workspace.getActiveTextEditor().getPath()?
-    return path.join(path.dirname(atom.workspace.getActiveTextEditor().getPath()), filePath)
-  else if atom.project.getPaths()[0]?
+  else if editor.getPath()?
+    if filePath is ''
+      return editor.getPath()
+    else
+      return path.join(path.dirname(editor.getPath()), filePath)
+  else if atom.project.getPaths()[0]? and filePath isnt ''
     return path.join(atom.project.getPaths()[0], filePath)
   else
-    throw new Error
+    throw new CommandError
+    return
 
 replaceGroups = (groups, replString) ->
   arr = replString.split('')
@@ -108,7 +111,9 @@ class Ex
   tabp: => @tabprevious()
 
   edit: (range, filePath) ->
-    filePath = fs.normalize(filePath.trim())
+    filePath = filePath.trim()
+    if filePath isnt ''
+      filePath = fs.normalize(filePath)
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
     buffer = atom.workspace.getActiveTextEditor().buffer
@@ -124,18 +129,28 @@ class Ex
     buffer.load()
 
   write: (range, filePath) ->
-    filePath = fs.normalize(filePath.trim())
+    filePath = filePath.trim()
+    if filePath isnt ''
+      filePath = fs.normalize(filePath)
     deferred = Promise.defer()
 
     editor = atom.workspace.getActiveTextEditor()
     try
       fullPath = getFullPath(filePath)
-    catch error
+    catch CommandError
       fullPath = atom.showSaveDialogSync()
     if fullPath?
-      trySave(-> editor.saveAs(fullPath))
-        .then deferred.resolve
-      editor.buffer.setPath(fullPath)
+      if filePath is ''
+        if editor.getPath()?
+          trySave(-> editor.save())
+            .then deferred.resolve
+        else
+          trySave(-> editor.saveAs(fullPath))
+            .then deferred.resolve
+        editor.buffer.setPath(fullPath)
+      else
+        trySave(-> saveAs(fullPath))
+          .then deferred.resolve
 
     deferred.promise
 
