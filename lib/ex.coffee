@@ -141,12 +141,16 @@ class Ex
       fullPath = atom.showSaveDialogSync()
     if fullPath?
       if filePath is ''
-        trySave(-> editor.save())
-          .then deferred.resolve
+        if editor.getPath()?
+          trySave(-> editor.save())
+            .then deferred.resolve
+        else
+          trySave(-> editor.saveAs(fullPath))
+            .then deferred.resolve
+        editor.buffer.setPath(fullPath)
       else
         trySave(-> saveAs(fullPath))
           .then deferred.resolve
-      editor.buffer.setPath(fullPath)
 
     deferred.promise
 
