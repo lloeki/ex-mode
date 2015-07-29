@@ -34,6 +34,9 @@ class ExState
   onDidFailToExecute: (fn) ->
     @emitter.on('failed-to-execute', fn)
 
+  onDidProcessOpStack: (fn) ->
+    @emitter.on('processed-op-stack', fn)
+
   pushOperations: (operations) ->
     @opStack.push operations
 
@@ -55,5 +58,6 @@ class ExState
         else
           throw e
     @clearOpStack()
+    @emitter.emit('processed-op-stack')
 
 module.exports = ExState

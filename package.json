@@ -32,5 +32,8 @@
         "0.20.0": "provideEx"
       }
     }
+  },
+  "devDependencies": {
+    "node-uuid": "^1.4.2"
   }
 }

@@ -37,31 +37,32 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
+  filePath = fs.normalize(filePath)
+
   if path.isAbsolute(filePath)
-    fullPath = filePath
+    filePath
   else if atom.project.getPaths().length == 0
-    fullPath = path.join('~', filePath)
+    path.join(fs.normalize('~'), filePath)
   else
-    fullPath = path.join(atom.project.getPaths()[0], filePath)
+    path.join(atom.project.getPaths()[0], filePath)
 
-  return fs.normalize(fullPath)
+replaceGroups = (groups, string) ->
+  replaced = ''
+  escaped = false
+  while (char = string[0])?
+    string = string[1..]
+    if char is '\\' and not escaped
+      escaped = true
+    else if /\d/.test(char) and escaped
+      escaped = false
+      group = groups[parseInt(char)]
+      group ?= ''
+      replaced += group
+    else
+      escaped = false
+      replaced += char
 
-replaceGroups = (groups, replString) ->
-  arr = replString.split('')
-  offset = 0
-  cdiff = 0
-
-  while (m = replString.match(/(?:[^\\]|^)\\(\d)/))?
-    group = groups[m[1]] or ''
-    i = replString.indexOf(m[0])
-    l = m[0].length
-    replString = replString.slice(i + l)
-    arr[i + offset...i + offset + l] = (if l is 2 then '' else m[0][0]) +
-      group
-    arr = arr.join('').split ''
-    offset += i + l - group.length
-
-  return arr.join('').replace(/\\\\(\d)/, '\\$1')
+  replaced
 
 class Ex
   @singleton: =>
@@ -75,21 +76,21 @@ class Ex
 
   q: => @quit()
 
-  tabedit: (range, args) ->
-    args = args.trim()
-    filePaths = args.split(' ')
-    pane = atom.workspace.getActivePane()
-    if filePaths? and filePaths.length > 0
-      for file in filePaths
-        do -> atom.workspace.openURIInPane file, pane
+  tabedit: (range, args) =>
+    if args.trim() isnt ''
+      @edit(range, args)
     else
-      atom.workspace.openURIInPane('', pane)
+      @tabnew(range, args)
 
   tabe: (args...) => @tabedit(args...)
 
-  tabnew: (args...) => @tabedit(args...)
+  tabnew: (range, args) =>
+    if args.trim() is ''
+      atom.workspace.open()
+    else
+      @tabedit(range, args)
 
-  tabclose: => @quit()
+  tabclose: (args...) => @quit(args...)
 
   tabc: => @tabclose()
 
@@ -106,16 +107,30 @@ class Ex
   tabp: => @tabprevious()
 
   edit: (range, filePath) ->
-    filePath = fs.normalize(filePath.trim())
+    filePath = filePath.trim()
+    if filePath[0] is '!'
+      force = true
+      filePath = filePath[1..].trim()
+    else
+      force = false
+
+    editor = atom.workspace.getActiveTextEditor()
+    if editor.isModified() and not force
+      throw new CommandError('No write since last change (add ! to override)')
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
-    buffer = atom.workspace.getActiveTextEditor().buffer
-    if buffer.isModified()
-      throw new CommandError('Unsaved file')
-    if filePath is ''
-      filePath = buffer.getPath()
-    buffer.setPath(getFullPath(filePath))
-    buffer.load()
+
+    if filePath.length isnt 0
+      fullPath = getFullPath(filePath)
+      if fullPath is editor.getPath()
+        editor.getBuffer().reload()
+      else
+        atom.workspace.open(fullPath)
+    else
+      if editor.getPath()?
+        editor.getBuffer().reload()
+      else
+        throw new CommandError('No file name')
 
   e: (args...) => @edit(args...)
 
@@ -125,33 +140,33 @@ class Ex
     buffer.load()
 
   write: (range, filePath) ->
+    if filePath[0] is '!'
+      force = true
+      filePath = filePath[1..]
+    else
+      force = false
+
     filePath = filePath.trim()
+    if filePath.indexOf(' ') isnt -1
+      throw new CommandError('Only one file name allowed')
+
     deferred = Promise.defer()
 
-    pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveTextEditor()
-    if editor.getPath()?
-      if filePath.length > 0
-        editorPath = editor.getPath()
-        fullPath = getFullPath(filePath)
-        trySave(-> saveAs(fullPath))
-          .then editor.buffer.setPath(editorPath)
-          .then deferred.resolve
-      else
-        trySave(-> editor.save())
-          .then deferred.resolve
-    else
-      if filePath.length > 0
-        fullPath = getFullPath(filePath)
-        trySave(-> saveAs(fullPath))
-          .then -> editor.buffer.setPath(fullPath)
-          .then deferred.resolve
-      else
-        fullPath = atom.showSaveDialogSync()
-        if fullPath?
-          trySave(-> editor.saveAs(fullPath))
-            .then -> editor.buffer.setPath(fullPath)
-            .then deferred.resolve
+    saved = false
+    if filePath.length isnt 0
+      fullPath = getFullPath(filePath)
+    if editor.getPath()? and (not fullPath? or editor.getPath() == fullPath)
+      # Use editor.save when no path is given or the path to the file is given
+      trySave(-> editor.save()).then(deferred.resolve)
+      saved = true
+    else if not fullPath?
+      fullPath = atom.showSaveDialogSync()
+
+    if not saved and fullPath?
+      if not force and fs.existsSync(fullPath)
+        throw new CommandError("File exists (add ! to override)")
+      trySave(-> saveAs(fullPath)).then(deferred.resolve)
 
     deferred.promise
 
@@ -161,7 +176,7 @@ class Ex
   wq: (args...) =>
     @write(args...).then => @quit()
 
-  x: (args...) => @wq(args...)
+  xit: (args...) => @wq(args...)
 
   wa: ->
     atom.workspace.saveAll()
