@@ -112,7 +112,10 @@ class Ex
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
     buffer = atom.workspace.getActiveTextEditor().buffer
-    filePath = buffer.getPath() if filePath is ''
+    if buffer.isModified()
+      throw new CommandError('Unsaved file')
+    if filePath is ''
+      filePath = buffer.getPath()
     buffer.setPath(getFullPath(filePath))
     buffer.load()
 
