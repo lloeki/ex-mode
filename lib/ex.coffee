@@ -37,16 +37,14 @@ saveAs = (filePath) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
-  if filePath is ''
-    throw new Error
   if path.isAbsolute(filePath)
-    return filePath
-  else if atom.workspace.getActiveTextEditor().getPath()?
-    return path.join(path.dirname(atom.workspace.getActiveTextEditor().getPath()), filePath)
-  else if atom.project.getPaths()[0]?
-    return path.join(atom.project.getPaths()[0], filePath)
+    fullPath = filePath
+  else if atom.project.getPaths().length == 0
+    fullPath = path.join('~', filePath)
   else
-    throw new Error
+    fullPath = path.join(atom.project.getPaths()[0], filePath)
+
+  return fs.normalize(fullPath)
 
 replaceGroups = (groups, replString) ->
   arr = replString.split('')
@@ -127,18 +125,33 @@ class Ex
     buffer.load()
 
   write: (range, filePath) ->
-    filePath = fs.normalize(filePath.trim())
+    filePath = filePath.trim()
     deferred = Promise.defer()
 
+    pane = atom.workspace.getActivePane()
     editor = atom.workspace.getActiveTextEditor()
-    try
-      fullPath = getFullPath(filePath)
-    catch error
-      fullPath = atom.showSaveDialogSync()
-    if fullPath?
-      trySave(-> editor.saveAs(fullPath))
-        .then deferred.resolve
-      editor.buffer.setPath(fullPath)
+    if editor.getPath()?
+      if filePath.length > 0
+        editorPath = editor.getPath()
+        fullPath = getFullPath(filePath)
+        trySave(-> saveAs(fullPath))
+          .then editor.buffer.setPath(editorPath)
+          .then deferred.resolve
+      else
+        trySave(-> editor.save())
+          .then deferred.resolve
+    else
+      if filePath.length > 0
+        fullPath = getFullPath(filePath)
+        trySave(-> saveAs(fullPath))
+          .then -> editor.buffer.setPath(fullPath)
+          .then deferred.resolve
+      else
+        fullPath = atom.showSaveDialogSync()
+        if fullPath?
+          trySave(-> editor.saveAs(fullPath))
+            .then -> editor.buffer.setPath(fullPath)
+            .then deferred.resolve
 
     deferred.promise
 
