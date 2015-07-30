@@ -1,4 +1,6 @@
 language: objective-c
+env:
+    - APM_TEST_PACKAGES="vim-mode"
 
 notifications:
   email:
