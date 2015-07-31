@@ -1,23 +1,19 @@
 class VimOption
-  @singleton: =>
-    @option ||= new VimOption
+  @options =
+    'list': 'editor.showInvisibles'
+    'nu': 'editor.showLineNumbers'
+    'number': 'editor.showLineNumbers'
 
-  list: =>
-    atom.config.set("editor.showInvisibles", true)
+  @registerOption: (vimName, atomName) ->
+    @options[vimName] = atomName
 
-  nolist: =>
-    atom.config.set("editor.showInvisibles", false)
+  @set: (name, value) ->
+    atom.config.set(@options[name], value)
 
-  number: =>
-    atom.config.set("editor.showLineNumbers", true)
+  @get: (name) ->
+    atom.config.get(@options[name])
 
-  nu: =>
-    @number()
-
-  nonumber: =>
-    atom.config.set("editor.showLineNumbers", false)
-
-  nonu: =>
-    @nonumber()
+  @inv: (name) ->
+    atom.config.set(@options[name], not atom.config.get(@options[name]))
 
 module.exports = VimOption

@@ -1,6 +1,6 @@
 GlobalExState = require './global-ex-state'
 ExState = require './ex-state'
-Ex = require './ex'
+ExCommands = require './ex-commands'
 {Disposable, CompositeDisposable} = require 'event-kit'
 
 module.exports = ExMode =
@@ -22,14 +22,18 @@ module.exports = ExMode =
 
         @exStates.set(editor, exState)
 
-        @disposables.add new Disposable =>
+        @disposables.add new Disposable ->
           exState.destroy()
 
   deactivate: ->
     @disposables.dispose()
 
-  provideEx: ->
-    registerCommand: Ex.registerCommand.bind(Ex)
+  provideEx_0_20: ->
+    registerCommand: (name, callback) ->
+      ExCommands.registerCommand({name, callback, priority: 1})
+
+  provideEx_0_30: ->
+    registerCommand: ExCommands.registerCommand
 
   consumeVim: (vim) ->
     @vim = vim

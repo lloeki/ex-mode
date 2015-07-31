@@ -14,8 +14,11 @@ Use the service to register commands, from your own package, or straight from `i
 # in Atom's init.coffee
 atom.packages.onDidActivatePackage (pack) ->
   if pack.name == 'ex-mode'
-    Ex = pack.mainModule.provideEx()
-    Ex.registerCommand 'z', -> console.log("Zzzzzz...")
+    Ex = pack.mainModule.provideEx_0_30()
+    Ex.registerCommand
+      name: 'z'
+      priority: 1
+      callback: -> console.log('zzzzzz')
 ```
 
 See `lib/ex.coffee` for some examples commands. Contributions are very welcome!

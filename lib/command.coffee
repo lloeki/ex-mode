@@ -1,14 +1,44 @@
 ExViewModel = require './ex-view-model'
-Ex = require './ex'
+ExCommands = require './ex-commands'
 Find = require './find'
 CommandError = require './command-error'
+{getSearchTerm} = require './utils'
+
+cmp = (x, y) -> if x > y then 1 else if x < y then -1 else 0
 
 class Command
   constructor: (@editor, @exState) ->
     @viewModel = new ExViewModel(@)
+    @vimState = @exState.globalExState.vim?.getEditorState(@editor)
+
+  scanEditor: (term, position, reverse = false) ->
+    return if term is ""
+
+    [rangesBefore, rangesAfter] = [[], []]
+    @editor.scan getSearchTerm(term), ({range}) ->
+      isBefore = if reverse
+        range.start.compare(position) < 0
+      else
+        range.start.compare(position) <= 0
+
+      if isBefore
+        rangesBefore.push(range)
+      else
+        rangesAfter.push(range)
+
+    if reverse
+      rangesAfter.concat(rangesBefore).reverse()[0]
+    else
+      rangesAfter.concat(rangesBefore)[0]
+
+  checkForRepeatSearch: (term, reversed = false) ->
+    if term is '' or reversed and term is '?' or not reversed and term is '/'
+      @vimState.getSearchHistoryItem(0)
+    else
+      term
 
   parseAddr: (str, curPos) ->
-    if str is '.'
+    if str in ['.', '']
       addr = curPos.row
     else if str is '$'
       # Lines are 0-indexed in Atom, but 1-indexed in vim.
@@ -20,18 +50,22 @@ class Command
     else if str[0] is "'" # Parse Mark...
       unless @vimState?
         throw new CommandError("Couldn't get access to vim-mode.")
-      mark = @vimState.marks[str[1]]
+      mark = @vimState.getMark(str[1])
       unless mark?
         throw new CommandError("Mark #{str} not set.")
-      addr = mark.bufferMarker.range.end.row
-    else if str[0] is "/"
-      addr = Find.findNextInBuffer(@editor.buffer, curPos, str[1...-1])
+      addr = mark.row
+    else if (first = str[0]) in ['/', '?']
+      reversed = first is '?'
+      str = @checkForRepeatSearch(str[1..], reversed)
+      throw new CommandError('No previous regular expression') if not str?
+      str = str[...-1] if str[str.length - 1] is first
+      @regex = str
+      lineRange = @editor.getLastCursor().getCurrentLineBufferRange()
+      pos = if reversed then lineRange.start else lineRange.end
+      addr = @scanEditor(str, pos, reversed)
       unless addr?
         throw new CommandError("Pattern not found: #{str[1...-1]}")
-    else if str[0] is "?"
-      addr = Find.findPreviousInBuffer(@editor.buffer, curPos, str[1...-1])
-      unless addr?
-        throw new CommandError("Pattern not found: #{str[1...-1]}")
+      addr = addr.start.row
 
     return addr
 
@@ -47,26 +81,25 @@ class Command
     else
       return -o
 
-  execute: (input) ->
-    @vimState = @exState.globalExState.vim?.getEditorState(@editor)
+  parseLine: (commandLine) ->
     # Command line parsing (mostly) following the rules at
     # http://pubs.opengroup.org/onlinepubs/9699919799/utilities
     # /ex.html#tag_20_40_13_03
+    _commandLine = commandLine
 
     # Steps 1/2: Leading blanks and colons are ignored.
-    cl = input.characters
-    cl = cl.replace(/^(:|\s)*/, '')
-    return unless cl.length > 0
+    commandLine = commandLine.replace(/^(:|\s)*/, '')
+    return unless commandLine.length > 0
 
     # Step 3: If the first character is a ", ignore the rest of the line
-    if cl[0] is '"'
+    if commandLine[0] is '"'
       return
 
     # Step 4: Address parsing
     lastLine = @editor.getBuffer().lines.length - 1
-    if cl[0] is '%'
+    if commandLine[0] is '%'
       range = [0, lastLine]
-      cl = cl[1..]
+      commandLine = commandLine[1..]
     else
       addrPattern = ///^
         (?:                               # First address
@@ -75,8 +108,8 @@ class Command
         \$|                               # Last line
         \d+|                              # n-th line
         '[\[\]<>'`"^.(){}a-zA-Z]|         # Marks
-        /.*?[^\\]/|                       # Regex
-        \?.*?[^\\]\?|                     # Backwards search
+        /(?:.*?[^\\]|)(?:/|$)|            # Regex
+        \?(?:.*?[^\\]|)(?:\?|$)|          # Backwards search
         [+-]\d*                           # Current line +/- a number of lines
         )((?:\s*[+-]\d*)*)                # Line offset
         )?
@@ -86,14 +119,15 @@ class Command
         \$|
         \d+|
         '[\[\]<>'`"^.(){}a-zA-Z]|
-        /.*?[^\\]/|
-        \?.*?[^\\]\?|
-        [+-]\d*
-        )((?:\s*[+-]\d*)*)
+        /(?:.*?[^\\]|)(?:/|$)|
+        \?(?:.*?[^\\]|)(?:\?|$)|
+        [+-]\d*|
+                                          # Empty second address
+        )((?:\s*[+-]\d*)*)|
         )?
       ///
 
-      [match, addr1, off1, addr2, off2] = cl.match(addrPattern)
+      [match, addr1, off1, addr2, off2] = commandLine.match(addrPattern)
 
       curPos = @editor.getCursorBufferPosition()
 
@@ -115,6 +149,9 @@ class Command
       if off2?
         address2 += @parseOffset(off2)
 
+      if @regex?
+        @vimState.pushSearchHistory(@regex)
+
       if address2 < 0 or address2 > lastLine
         throw new CommandError('Invalid range')
 
@@ -122,15 +159,15 @@ class Command
         throw new CommandError('Backwards range given')
 
       range = [address1, if address2? then address2 else address1]
-      cl = cl[match?.length..]
+      commandLine = commandLine[match?.length..]
 
     # Step 5: Leading blanks are ignored
-    cl = cl.trimLeft()
+    commandLine = commandLine.trimLeft()
 
     # Step 6a: If no command is specified, go to the last specified address
-    if cl.length is 0
+    if commandLine.length is 0
       @editor.setCursorBufferPosition([range[1], 0])
-      return
+      return {range, command: undefined, args: undefined}
 
     # Ignore steps 6b and 6c since they only make sense for print commands and
     # print doesn't make sense
@@ -139,31 +176,39 @@ class Command
 
     # Step 7b: :k<valid mark> is equal to :mark <valid mark> - only a-zA-Z is
     # in vim-mode for now
-    if cl.length is 2 and cl[0] is 'k' and /[a-z]/i.test(cl[1])
+    if commandLine.length is 2 and commandLine[0] is 'k' \
+        and /[a-z]/i.test(commandLine[1])
       command = 'mark'
-      args = cl[1]
-    else if not /[a-z]/i.test(cl[0])
-      command = cl[0]
-      args = cl[1..]
+      args = commandLine[1]
+    else if not /[a-z]/i.test(commandLine[0])
+      command = commandLine[0]
+      args = commandLine[1..]
     else
-      [m, command, args] = cl.match(/^(\w+)(.*)/)
+      [m, command, args] = commandLine.match(/^(\w+)(.*)/)
 
-    # If the command matches an existing one exactly, execute that one
-    if (func = Ex.singleton()[command])?
-      func(range, args)
-    else
-      # Step 8: Match command against existing commands
-      matching = (name for name, val of Ex.singleton() when \
-        name.indexOf(command) is 0)
+    commandLineRE = new RegExp("^" + command)
+    matching = []
 
-      matching.sort()
+    for name in Object.keys(ExCommands.commands)
+      if commandLineRE.test(name)
+        command = ExCommands.commands[name]
+        if matching.length is 0
+          matching = [command]
+        else
+          switch cmp(command.priority, matching[0].priority)
+            when 1 then matching = [command]
+            when 0 then matching.push(command)
 
-      command = matching[0]
+    command = matching.sort()[0]
+    unless command?
+      throw new CommandError("Not an editor command: #{_commandLine}")
 
-      func = Ex.singleton()[command]
-      if func?
-        func(range, args)
-      else
-        throw new CommandError("Not an editor command: #{input.characters}")
+    return {command: command.callback, range, args: args.trimLeft()}
+
+
+  execute: (input) ->
+    {command, range, args} = @parseLine(input.characters)
+
+    command?({args, range, @editor, @exState, @vimState})
 
 module.exports = Command
