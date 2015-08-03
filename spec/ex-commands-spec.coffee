@@ -3,8 +3,7 @@ path = require 'path'
 os = require 'os'
 uuid = require 'node-uuid'
 helpers = require './spec-helper'
-
-Ex = require('../lib/ex').singleton()
+ExCommands = require('../lib/ex-commands')
 
 describe "the commands", ->
   [editor, editorElement, vimState, exState, dir, dir2] = []
@@ -177,11 +176,25 @@ describe "the commands", ->
 
   describe ":tabclose", ->
     it "acts as an alias to :quit", ->
-      spyOn(Ex, 'tabclose').andCallThrough()
-      spyOn(Ex, 'quit').andCallThrough()
+      spyOn(ExCommands.commands.tabclose, 'callback').andCallThrough()
+      spyOn(ExCommands.commands.quit, 'callback').andCallThrough()
       keydown(':')
       submitNormalModeInputText('tabclose')
-      expect(Ex.quit).toHaveBeenCalledWith(Ex.tabclose.calls[0].args...)
+      expect(ExCommands.commands.quit.callback)
+        .toHaveBeenCalledWith(ExCommands.commands.tabclose.callback
+          .calls[0].args[0])
+
+  describe ":qall", ->
+    beforeEach ->
+      waitsForPromise ->
+        atom.workspace.open().then -> atom.workspace.open()
+          .then -> atom.workspace.open()
+
+    it "closes the window", ->
+      spyOn(atom, 'close')
+      keydown(':')
+      submitNormalModeInputText('qall')
+      expect(atom.close).toHaveBeenCalled()
 
   describe ":tabnext", ->
     pane = null
@@ -223,45 +236,81 @@ describe "the commands", ->
       submitNormalModeInputText('tabprevious')
       expect(pane.getActiveItemIndex()).toBe(pane.getItems().length - 1)
 
+  describe ":update", ->
+    it "acts as an alias to :write", ->
+      spyOn(ExCommands.commands.update, 'callback')
+        .andCallThrough()
+      spyOn(ExCommands.commands.write, 'callback')
+      keydown(':')
+      submitNormalModeInputText('update')
+      expect(ExCommands.commands.write.callback).toHaveBeenCalledWith(
+        ExCommands.commands.update.callback.calls[0].args[0])
+
+  describe ":wall", ->
+    it "saves all open files", ->
+      spyOn(atom.workspace, 'saveAll')
+      keydown(':')
+      submitNormalModeInputText('wall')
+      expect(atom.workspace.saveAll).toHaveBeenCalled()
+
   describe ":wq", ->
     beforeEach ->
-      spyOn(Ex, 'write').andCallThrough()
-      spyOn(Ex, 'quit')
+      spyOn(ExCommands.commands.write, 'callback').andCallThrough()
+      spyOn(ExCommands.commands.quit, 'callback')
 
     it "writes the file, then quits", ->
       spyOn(atom, 'showSaveDialogSync').andReturn(projectPath('wq-1'))
       keydown(':')
       submitNormalModeInputText('wq')
-      expect(Ex.write).toHaveBeenCalled()
+      expect(ExCommands.commands.write.callback).toHaveBeenCalled()
       # Since `:wq` only calls `:quit` after `:write` is finished, we need to
       #  wait a bit for the `:quit` call to occur
-      waitsFor((-> Ex.quit.wasCalled), "the :quit command to be called", 100)
+      waitsFor((-> ExCommands.commands.quit.callback.wasCalled),
+        "the :quit command to be called", 100)
 
     it "doesn't quit when the file is new and no path is specified in the save dialog", ->
       spyOn(atom, 'showSaveDialogSync').andReturn(undefined)
       keydown(':')
       submitNormalModeInputText('wq')
-      expect(Ex.write).toHaveBeenCalled()
+      expect(ExCommands.commands.write.callback).toHaveBeenCalled()
       wasNotCalled = false
       # FIXME: This seems dangerous, but setTimeout somehow doesn't work.
       setImmediate((->
-        wasNotCalled = not Ex.quit.wasCalled))
+        wasNotCalled = not ExCommands.commands.quit.callback.wasCalled))
       waitsFor((-> wasNotCalled), 100)
 
     it "passes the file name", ->
       keydown(':')
       submitNormalModeInputText('wq wq-2')
-      expect(Ex.write)
+      expect(ExCommands.commands.write.callback)
         .toHaveBeenCalled()
-      expect(Ex.write.calls[0].args[1].trim()).toEqual('wq-2')
-      waitsFor((-> Ex.quit.wasCalled), "the :quit command to be called", 100)
+      expect(ExCommands.commands.write.callback.calls[0].args[0].args)
+        .toEqual('wq-2')
+      waitsFor((-> ExCommands.commands.quit.callback.wasCalled),
+        "the :quit command to be called", 100)
 
   describe ":xit", ->
     it "acts as an alias to :wq", ->
-      spyOn(Ex, 'wq')
+      spyOn(ExCommands.commands.wq, 'callback')
       keydown(':')
       submitNormalModeInputText('xit')
-      expect(Ex.wq).toHaveBeenCalled()
+      expect(ExCommands.commands.wq.callback).toHaveBeenCalled()
+
+  describe ":exit", ->
+    it "is an alias to :xit", ->
+      spyOn(ExCommands.commands.xit, 'callback')
+      keydown(':')
+      submitNormalModeInputText('exit')
+      expect(ExCommands.commands.xit.callback).toHaveBeenCalled()
+
+  describe ":xall", ->
+    it "saves all open files and closes the window", ->
+      spyOn(atom.workspace, 'saveAll')
+      spyOn(atom, 'close')
+      keydown(':')
+      submitNormalModeInputText('xall')
+      expect(atom.workspace.saveAll).toHaveBeenCalled()
+      expect(atom.close).toHaveBeenCalled()
 
   describe ":edit", ->
     describe "without a file name", ->
@@ -339,19 +388,20 @@ describe "the commands", ->
 
   describe ":tabedit", ->
     it "acts as an alias to :edit if supplied with a path", ->
-      spyOn(Ex, 'tabedit').andCallThrough()
-      spyOn(Ex, 'edit')
+      spyOn(ExCommands.commands.tabedit, 'callback').andCallThrough()
+      spyOn(ExCommands.commands.edit, 'callback')
       keydown(':')
       submitNormalModeInputText('tabedit tabedit-test')
-      expect(Ex.edit).toHaveBeenCalledWith(Ex.tabedit.calls[0].args...)
+      expect(ExCommands.commands.edit.callback).toHaveBeenCalledWith(
+        ExCommands.commands.tabedit.callback.calls[0].args...)
 
     it "acts as an alias to :tabnew if not supplied with a path", ->
-      spyOn(Ex, 'tabedit').andCallThrough()
-      spyOn(Ex, 'tabnew')
+      spyOn(ExCommands.commands.tabedit, 'callback').andCallThrough()
+      spyOn(ExCommands.commands.tabnew, 'callback')
       keydown(':')
       submitNormalModeInputText('tabedit  ')
-      expect(Ex.tabnew)
-        .toHaveBeenCalledWith(Ex.tabedit.calls[0].args...)
+      expect(ExCommands.commands.tabnew.callback).toHaveBeenCalledWith(
+        ExCommands.commands.tabedit.callback.calls[0].args...)
 
   describe ":tabnew", ->
     it "opens a new tab", ->
@@ -372,6 +422,15 @@ describe "the commands", ->
       # FIXME: Should test whether the new pane contains a TextEditor
       #        pointing to the same path
 
+  describe ":new", ->
+    it "splits a new file upwards", ->
+      pane = atom.workspace.getActivePane()
+      spyOn(pane, 'splitUp').andCallThrough()
+      keydown(':')
+      submitNormalModeInputText('new')
+      expect(pane.splitUp).toHaveBeenCalled()
+      # FIXME: Should test whether the new pane contains an empty file
+
   describe ":vsplit", ->
     it "splits the current file to the left", ->
       pane = atom.workspace.getActivePane()
@@ -383,6 +442,15 @@ describe "the commands", ->
       expect(pane.splitLeft).toHaveBeenCalled()
       # FIXME: Should test whether the new pane contains a TextEditor
       #        pointing to the same path
+
+  describe ":vnew", ->
+    it "splits a new file to the left", ->
+      pane = atom.workspace.getActivePane()
+      spyOn(pane, 'splitLeft').andCallThrough()
+      keydown(':')
+      submitNormalModeInputText('vnew')
+      expect(pane.splitLeft).toHaveBeenCalled()
+      # FIXME: Should test whether the new pane contains an empty file
 
   describe ":delete", ->
     beforeEach ->
@@ -449,12 +517,88 @@ describe "the commands", ->
       submitNormalModeInputText(':%substitute/abc/ghi/ig')
       expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nghiaghi')
 
-    it "can't be delimited by letters", ->
+    it "can't be delimited by letters or \\", ->
       keydown(':')
       submitNormalModeInputText(':substitute nanxngi')
       expect(atom.notifications.notifications[0].message).toEqual(
         "Command error: Regular expressions can't be delimited by letters")
       expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
+
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      submitNormalModeInputText(':substitute\\a\\x\\gi')
+      expect(atom.notifications.notifications[1].message).toEqual(
+        "Command error: Regular expressions can't be delimited by \\")
+      expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
+
+    describe "case sensitivity", ->
+      describe "respects the smartcase setting", ->
+        beforeEach ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is off and the pattern is lowercase", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is off and the pattern is uppercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          keydown(':')
+          submitNormalModeInputText(':substitute/ABC/ghi/g')
+          expect(editor.getText()).toEqual('abcaghi\ndefdDEF\nabcaABC')
+
+        it "uses case insensitive search if smartcase is on and the pattern is lowercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is on and the pattern is uppercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          keydown(':')
+          submitNormalModeInputText(':substitute/ABC/ghi/g')
+          expect(editor.getText()).toEqual('abcaghi\ndefdDEF\nabcaABC')
+
+      describe "\\c and \\C in the pattern", ->
+        beforeEach ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+
+        it "uses case insensitive search if smartcase is off and \c is in the pattern", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc\\c/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "doesn't matter where in the pattern \\c is", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\cbc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is on, \\C is in the pattern and the pattern is lowercase", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\Cbc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
+
+        it "overrides \\C with \\c if \\C comes first", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\Cb\\cc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "overrides \\C with \\c if \\c comes first", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\cb\\Cc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "overrides an appended /i flag with \\C", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/ab\\Cc/ghi/gi')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
 
     describe "capturing groups", ->
       beforeEach ->
@@ -478,7 +622,7 @@ describe "the commands", ->
   describe ":set", ->
     it "throws an error without a specified option", ->
       keydown(':')
-      submitNormalModeInputText(':set')
+      submitNormalModeInputText('set')
       expect(atom.notifications.notifications[0].message).toEqual(
         'Command error: No option specified')
 
@@ -486,33 +630,47 @@ describe "the commands", ->
       atom.config.set('editor.showInvisibles', false)
       atom.config.set('editor.showLineNumbers', false)
       keydown(':')
-      submitNormalModeInputText(':set list number')
+      submitNormalModeInputText('set list number')
       expect(atom.config.get('editor.showInvisibles')).toBe(true)
       expect(atom.config.get('editor.showLineNumbers')).toBe(true)
 
-    describe "the options", ->
-      beforeEach ->
-        atom.config.set('editor.showInvisibles', false)
-        atom.config.set('editor.showLineNumbers', false)
+    it "sets options to false with no{option}", ->
+      atom.config.set('editor.showInvisibles', true)
+      keydown(':')
+      submitNormalModeInputText('set nolist')
+      expect(atom.config.get('editor.showInvisibles')).toBe(false)
 
-      it "sets (no)list", ->
+    it "inverts options with inv{option}", ->
+      atom.config.set('editor.showInvisibles', true)
+      keydown(':')
+      submitNormalModeInputText('set invlist')
+      expect(atom.config.get('editor.showInvisibles')).toBe(false)
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      submitNormalModeInputText('set invlist')
+      expect(atom.config.get('editor.showInvisibles')).toBe(true)
+
+    it "inverts options with {option}!", ->
+      atom.config.set('editor.showInvisibles', true)
+      keydown(':')
+      submitNormalModeInputText('set list!')
+      expect(atom.config.get('editor.showInvisibles')).toBe(false)
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      submitNormalModeInputText('set list!')
+      expect(atom.config.get('editor.showInvisibles')).toBe(true)
+
+    describe "the options", ->
+      it "sets list", ->
+        atom.config.set('editor.showInvisibles', false)
         keydown(':')
         submitNormalModeInputText(':set list')
         expect(atom.config.get('editor.showInvisibles')).toBe(true)
-        atom.commands.dispatch(editorElement, 'ex-mode:open')
-        submitNormalModeInputText(':set nolist')
-        expect(atom.config.get('editor.showInvisibles')).toBe(false)
 
-      it "sets (no)nu(mber)", ->
+      it "sets nu[mber]", ->
+        atom.config.set('editor.showLineNumbers', false)
         keydown(':')
         submitNormalModeInputText(':set nu')
         expect(atom.config.get('editor.showLineNumbers')).toBe(true)
-        atom.commands.dispatch(editorElement, 'ex-mode:open')
-        submitNormalModeInputText(':set nonu')
-        expect(atom.config.get('editor.showLineNumbers')).toBe(false)
+        atom.config.set('editor.showLineNumbers', false)
         atom.commands.dispatch(editorElement, 'ex-mode:open')
         submitNormalModeInputText(':set number')
         expect(atom.config.get('editor.showLineNumbers')).toBe(true)
-        atom.commands.dispatch(editorElement, 'ex-mode:open')
-        submitNormalModeInputText(':set nonumber')
-        expect(atom.config.get('editor.showLineNumbers')).toBe(false)

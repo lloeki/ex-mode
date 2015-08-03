@@ -29,7 +29,8 @@
     "ex-mode": {
       "description": "Ex commands",
       "versions": {
-        "0.20.0": "provideEx"
+        "0.20.0": "provideEx_0_20",
+        "0.30.0": "provideEx_0_30"
       }
     }
   },
