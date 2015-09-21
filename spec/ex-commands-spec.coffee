@@ -453,7 +453,14 @@ describe "the commands", ->
       keydown(':')
       submitNormalModeInputText(':substitute nanxngi')
       expect(atom.notifications.notifications[0].message).toEqual(
-        "Command error: Regular expressions can't be delimited by letters")
+        "Command error: Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
+      expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
+
+    it "can't be delimited by numbers", ->
+      keydown(':')
+      submitNormalModeInputText(':substitute 1a1x1gi')
+      expect(atom.notifications.notifications[0].message).toEqual(
+        "Command error: Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
       expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
 
     describe "capturing groups", ->

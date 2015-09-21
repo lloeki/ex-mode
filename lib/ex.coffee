@@ -199,9 +199,9 @@ class Ex
   substitute: (range, args) ->
     args = args.trimLeft()
     delim = args[0]
-    if /[a-z]/i.test(delim)
+    if /[a-z1-9\\"|]/i.test(delim)
       throw new CommandError(
-        "Regular expressions can't be delimited by letters")
+        "Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
     delimRE = new RegExp("[^\\\\]#{delim}")
     spl = []
     args_ = args[1..]
