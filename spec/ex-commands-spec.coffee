@@ -449,12 +449,19 @@ describe "the commands", ->
       submitNormalModeInputText(':%substitute/abc/ghi/ig')
       expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nghiaghi')
 
-    it "can't be delimited by letters", ->
-      keydown(':')
-      submitNormalModeInputText(':substitute nanxngi')
-      expect(atom.notifications.notifications[0].message).toEqual(
-        "Command error: Regular expressions can't be delimited by letters")
-      expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
+    describe "illegal delimiters", ->
+      test = (delim) ->
+        keydown(':')
+        submitNormalModeInputText(":substitute #{delim}a#{delim}x#{delim}gi")
+        expect(atom.notifications.notifications[0].message).toEqual(
+          "Command error: Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
+        expect(editor.getText()).toEqual('abcaABC\ndefdDEF\nabcaABC')
+
+      it "can't be delimited by letters", -> test 'n'
+      it "can't be delimited by numbers", -> test '3'
+      it "can't be delimited by '\\'",    -> test '\\'
+      it "can't be delimited by '\"'",    -> test '"'
+      it "can't be delimited by '|'",     -> test '|'
 
     describe "capturing groups", ->
       beforeEach ->
