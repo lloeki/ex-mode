@@ -36,10 +36,15 @@ class ExCommandModeInputElement extends HTMLDivElement
         @confirm() if e.newText
     else
       atom.commands.add(@editorElement, 'editor:newline', @confirm.bind(this))
+      atom.commands.add(@editorElement, 'core:backspace', @backspace.bind(this))
 
     atom.commands.add(@editorElement, 'core:confirm', @confirm.bind(this))
     atom.commands.add(@editorElement, 'core:cancel', @cancel.bind(this))
     atom.commands.add(@editorElement, 'blur', @cancel.bind(this))
+
+  backspace: ->
+    # pressing backspace over empty `:` should cancel ex-mode
+    @cancel() unless @editorElement.getModel().getText().length
 
   confirm: ->
     @value = @editorElement.getModel().getText() or @defaultText
