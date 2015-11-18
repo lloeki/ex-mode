@@ -178,7 +178,9 @@ class Ex
 
   xit: (args...) => @wq(args...)
 
-  wa: ->
+  wa: => @wall()
+  
+  wall: ->
     atom.workspace.saveAll()
 
   split: (range, args) ->
