@@ -4,33 +4,31 @@ fs = require 'fs-plus'
 VimOption = require './vim-option'
 
 trySave = (func) ->
-  deferred = Promise.defer()
+  new Promise (resolve) ->
+    try
+      func()
+      resolve()
+    catch error
+      if error.message.endsWith('is a directory')
+        atom.notifications.addWarning("Unable to save file: #{error.message}")
+      else if error.path?
+        if error.code is 'EACCES'
+          atom.notifications
+            .addWarning("Unable to save file: Permission denied '#{error.path}'")
+        else if error.code in ['EPERM', 'EBUSY', 'UNKNOWN', 'EEXIST']
+          atom.notifications.addWarning("Unable to save file '#{error.path}'",
+            detail: error.message)
+        else if error.code is 'EROFS'
+          atom.notifications.addWarning(
+            "Unable to save file: Read-only file system '#{error.path}'")
+      else if (errorMatch =
+          /ENOTDIR, not a directory '([^']+)'/.exec(error.message))
+        fileName = errorMatch[1]
+        atom.notifications.addWarning("Unable to save file: A directory in the "+
+          "path '#{fileName}' could not be written to")
+      else
+        throw error
 
-  try
-    func()
-    deferred.resolve()
-  catch error
-    if error.message.endsWith('is a directory')
-      atom.notifications.addWarning("Unable to save file: #{error.message}")
-    else if error.path?
-      if error.code is 'EACCES'
-        atom.notifications
-          .addWarning("Unable to save file: Permission denied '#{error.path}'")
-      else if error.code in ['EPERM', 'EBUSY', 'UNKNOWN', 'EEXIST']
-        atom.notifications.addWarning("Unable to save file '#{error.path}'",
-          detail: error.message)
-      else if error.code is 'EROFS'
-        atom.notifications.addWarning(
-          "Unable to save file: Read-only file system '#{error.path}'")
-    else if (errorMatch =
-        /ENOTDIR, not a directory '([^']+)'/.exec(error.message))
-      fileName = errorMatch[1]
-      atom.notifications.addWarning("Unable to save file: A directory in the "+
-        "path '#{fileName}' could not be written to")
-    else
-      throw error
-
-  deferred.promise
 
 saveAs = (filePath) ->
   editor = atom.workspace.getActiveTextEditor()
@@ -150,25 +148,23 @@ class Ex
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
 
-    deferred = Promise.defer()
+    new Promise (resolve) ->
 
-    editor = atom.workspace.getActiveTextEditor()
-    saved = false
-    if filePath.length isnt 0
-      fullPath = getFullPath(filePath)
-    if editor.getPath()? and (not fullPath? or editor.getPath() == fullPath)
-      # Use editor.save when no path is given or the path to the file is given
-      trySave(-> editor.save()).then(deferred.resolve)
-      saved = true
-    else if not fullPath?
-      fullPath = atom.showSaveDialogSync()
+      editor = atom.workspace.getActiveTextEditor()
+      saved = false
+      if filePath.length isnt 0
+        fullPath = getFullPath(filePath)
+      if editor.getPath()? and (not fullPath? or editor.getPath() == fullPath)
+        # Use editor.save when no path is given or the path to the file is given
+        trySave(-> editor.save()).then(resolve)
+        saved = true
+      else if not fullPath?
+        fullPath = atom.showSaveDialogSync()
 
-    if not saved and fullPath?
-      if not force and fs.existsSync(fullPath)
-        throw new CommandError("File exists (add ! to override)")
-      trySave(-> saveAs(fullPath)).then(deferred.resolve)
-
-    deferred.promise
+      if not saved and fullPath?
+        if not force and fs.existsSync(fullPath)
+          throw new CommandError("File exists (add ! to override)")
+        trySave(-> saveAs(fullPath)).then(resolve)
 
   w: (args...) =>
     @write(args...)
