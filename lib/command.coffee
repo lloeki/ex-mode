@@ -150,7 +150,7 @@ class Command
 
     # If the command matches an existing one exactly, execute that one
     if (func = Ex.singleton()[command])?
-      func(range, args)
+      func({ range, args, @vimState, @exState, @editor })
     else
       # Step 8: Match command against existing commands
       matching = (name for name, val of Ex.singleton() when \
@@ -162,7 +162,7 @@ class Command
 
       func = Ex.singleton()[command]
       if func?
-        func(range, args)
+        func({ range, args, @vimState, @exState, @editor })
       else
         throw new CommandError("Not an editor command: #{input.characters}")
 

@@ -12,27 +12,37 @@ describe "the commands", ->
   beforeEach ->
     vimMode = atom.packages.loadPackage('vim-mode')
     exMode = atom.packages.loadPackage('ex-mode')
-    exMode.activate()
+    waitsForPromise ->
+      activationPromise = exMode.activate()
+      helpers.activateExMode()
+      activationPromise
+
+    runs ->
+      spyOn(exMode.mainModule.globalExState, 'setVim').andCallThrough()
 
     waitsForPromise ->
-      vimMode.activate().then ->
-        helpers.activateExMode().then ->
-          dir = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
-          dir2 = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
-          fs.makeTreeSync(dir)
-          fs.makeTreeSync(dir2)
-          atom.project.setPaths([dir, dir2])
+      vimMode.activate()
 
-          helpers.getEditorElement (element) ->
-            atom.commands.dispatch(element, 'ex-mode:open')
-            keydown('escape')
-            editorElement = element
-            editor = editorElement.getModel()
-            vimState = vimMode.mainModule.getEditorState(editor)
-            exState = exMode.mainModule.exStates.get(editor)
-            vimState.activateNormalMode()
-            vimState.resetNormalMode()
-            editor.setText("abc\ndef\nabc\ndef")
+    waitsFor ->
+      exMode.mainModule.globalExState.setVim.calls.length > 0
+
+    runs ->
+      dir = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
+      dir2 = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
+      fs.makeTreeSync(dir)
+      fs.makeTreeSync(dir2)
+      atom.project.setPaths([dir, dir2])
+
+      helpers.getEditorElement (element) ->
+        atom.commands.dispatch(element, "ex-mode:open")
+        keydown('escape')
+        editorElement = element
+        editor = editorElement.getModel()
+        vimState = vimMode.mainModule.getEditorState(editor)
+        exState = exMode.mainModule.exStates.get(editor)
+        vimState.activateNormalMode()
+        vimState.resetNormalMode()
+        editor.setText("abc\ndef\nabc\ndef")
 
   afterEach ->
     fs.removeSync(dir)
@@ -253,7 +263,7 @@ describe "the commands", ->
       submitNormalModeInputText('wq wq-2')
       expect(Ex.write)
         .toHaveBeenCalled()
-      expect(Ex.write.calls[0].args[1].trim()).toEqual('wq-2')
+      expect(Ex.write.calls[0].args[0].args.trim()).toEqual('wq-2')
       waitsFor((-> Ex.quit.wasCalled), "the :quit command to be called", 100)
 
   describe ":xit", ->

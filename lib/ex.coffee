@@ -32,8 +32,7 @@ trySave = (func) ->
 
   deferred.promise
 
-saveAs = (filePath) ->
-  editor = atom.workspace.getActiveTextEditor()
+saveAs = (filePath, editor) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
@@ -76,21 +75,21 @@ class Ex
 
   q: => @quit()
 
-  tabedit: (range, args) =>
-    if args.trim() isnt ''
-      @edit(range, args)
+  tabedit: (args) =>
+    if args.args.trim() isnt ''
+      @edit(args)
     else
-      @tabnew(range, args)
+      @tabnew(args)
 
-  tabe: (args...) => @tabedit(args...)
+  tabe: (args) => @tabedit(args)
 
-  tabnew: (range, args) =>
+  tabnew: ({ range, args }) =>
     if args.trim() is ''
       atom.workspace.open()
     else
       @tabedit(range, args)
 
-  tabclose: (args...) => @quit(args...)
+  tabclose: (args) => @quit(args)
 
   tabc: => @tabclose()
 
@@ -106,15 +105,14 @@ class Ex
 
   tabp: => @tabprevious()
 
-  edit: (range, filePath) ->
-    filePath = filePath.trim()
+  edit: ({ range, args, editor }) ->
+    filePath = args.trim()
     if filePath[0] is '!'
       force = true
       filePath = filePath[1..].trim()
     else
       force = false
 
-    editor = atom.workspace.getActiveTextEditor()
     if editor.isModified() and not force
       throw new CommandError('No write since last change (add ! to override)')
     if filePath.indexOf(' ') isnt -1
@@ -132,14 +130,15 @@ class Ex
       else
         throw new CommandError('No file name')
 
-  e: (args...) => @edit(args...)
+  e: (args) => @edit(args)
 
   enew: ->
     buffer = atom.workspace.getActiveTextEditor().buffer
     buffer.setPath(undefined)
     buffer.load()
 
-  write: (range, filePath) ->
+  write: ({ range, args, editor }) ->
+    filePath = args
     if filePath[0] is '!'
       force = true
       filePath = filePath[1..]
@@ -166,22 +165,22 @@ class Ex
     if not saved and fullPath?
       if not force and fs.existsSync(fullPath)
         throw new CommandError("File exists (add ! to override)")
-      trySave(-> saveAs(fullPath)).then(deferred.resolve)
+      trySave(-> saveAs(fullPath, editor)).then(deferred.resolve)
 
     deferred.promise
 
-  w: (args...) =>
-    @write(args...)
+  w: (args) =>
+    @write(args)
 
-  wq: (args...) =>
-    @write(args...).then => @quit()
+  wq: (args) =>
+    @write(args).then => @quit()
 
-  xit: (args...) => @wq(args...)
+  xit: (args) => @wq(args)
 
   wa: ->
     atom.workspace.saveAll()
 
-  split: (range, args) ->
+  split: ({ range, args }) ->
     args = args.trim()
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
@@ -194,9 +193,9 @@ class Ex
     else
       pane.splitUp(copyActiveItem: true)
 
-  sp: (args...) => @split(args...)
+  sp: (args) => @split(args)
 
-  substitute: (range, args) ->
+  substitute: ({ range, args, editor, vimState }) ->
     args = args.trimLeft()
     delim = args[0]
     if /[a-z1-9\\"|]/i.test(delim)
@@ -240,9 +239,9 @@ class Ex
             replace(replaceGroups(match[..], spl[1]))
         )
 
-  s: (args...) => @substitute(args...)
+  s: (args) => @substitute(args)
 
-  vsplit: (range, args) ->
+  vsplit: ({ range, args }) ->
     args = args.trim()
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
@@ -255,13 +254,13 @@ class Ex
     else
       pane.splitLeft(copyActiveItem: true)
 
-  vsp: (args...) => @vsplit(args...)
+  vsp: (args) => @vsplit(args)
 
-  delete: (range) ->
+  delete: ({ range }) ->
     range = [[range[0], 0], [range[1] + 1, 0]]
     atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
 
-  set: (range, args) ->
+  set: ({ range, args }) ->
     args = args.trim()
     if args == ""
       throw new CommandError("No option specified")
