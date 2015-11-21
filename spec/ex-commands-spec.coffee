@@ -473,6 +473,103 @@ describe "the commands", ->
       it "can't be delimited by '\"'",    -> test '"'
       it "can't be delimited by '|'",     -> test '|'
 
+    describe "empty replacement", ->
+      beforeEach ->
+        editor.setText('abcabc\nabcabc')
+
+      it "removes the pattern without modifiers", ->
+        keydown(':')
+        submitNormalModeInputText(":substitute/abc//")
+        expect(editor.getText()).toEqual('abc\nabcabc')
+
+      it "removes the pattern with modifiers", ->
+        keydown(':')
+        submitNormalModeInputText(":substitute/abc//g")
+        expect(editor.getText()).toEqual('\nabcabc')
+
+    describe "replacing with escape sequences", ->
+      beforeEach ->
+        editor.setText('abc,def,ghi')
+
+      test = (escapeChar, escaped) ->
+        keydown(':')
+        submitNormalModeInputText(":substitute/,/\\#{escapeChar}/g")
+        expect(editor.getText()).toEqual("abc#{escaped}def#{escaped}ghi")
+
+      it "replaces with a tab", -> test('t', '\t')
+      it "replaces with a linefeed", -> test('n', '\n')
+      it "replaces with a carriage return", -> test('r', '\r')
+
+    describe "case sensitivity", ->
+      describe "respects the smartcase setting", ->
+        beforeEach ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is off and the pattern is lowercase", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is off and the pattern is uppercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          keydown(':')
+          submitNormalModeInputText(':substitute/ABC/ghi/g')
+          expect(editor.getText()).toEqual('abcaghi\ndefdDEF\nabcaABC')
+
+        it "uses case insensitive search if smartcase is on and the pattern is lowercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is on and the pattern is uppercase", ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+          keydown(':')
+          submitNormalModeInputText(':substitute/ABC/ghi/g')
+          expect(editor.getText()).toEqual('abcaghi\ndefdDEF\nabcaABC')
+
+      describe "\\c and \\C in the pattern", ->
+        beforeEach ->
+          editor.setText('abcaABC\ndefdDEF\nabcaABC')
+
+        it "uses case insensitive search if smartcase is off and \c is in the pattern", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/abc\\c/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "doesn't matter where in the pattern \\c is", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', false)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\cbc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "uses case sensitive search if smartcase is on, \\C is in the pattern and the pattern is lowercase", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\Cbc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
+
+        it "overrides \\C with \\c if \\C comes first", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\Cb\\cc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "overrides \\C with \\c if \\c comes first", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/a\\cb\\Cc/ghi/g')
+          expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nabcaABC')
+
+        it "overrides an appended /i flag with \\C", ->
+          atom.config.set('vim-mode.useSmartcaseForSearch', true)
+          keydown(':')
+          submitNormalModeInputText(':substitute/ab\\Cc/ghi/gi')
+          expect(editor.getText()).toEqual('ghiaABC\ndefdDEF\nabcaABC')
+
     describe "capturing groups", ->
       beforeEach ->
         editor.setText('abcaABC\ndefdDEF\nabcaABC')

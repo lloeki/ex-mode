@@ -2,6 +2,7 @@ path = require 'path'
 CommandError = require './command-error'
 fs = require 'fs-plus'
 VimOption = require './vim-option'
+_ = require 'underscore-plus'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -62,6 +63,41 @@ replaceGroups = (groups, string) ->
       replaced += char
 
   replaced
+
+getSearchTerm = (term, modifiers = {'g': true}) ->
+
+  escaped = false
+  hasc = false
+  hasC = false
+  term_ = term
+  term = ''
+  for char in term_
+    if char is '\\' and not escaped
+      escaped = true
+      term += char
+    else
+      if char is 'c' and escaped
+        hasc = true
+        term = term[...-1]
+      else if char is 'C' and escaped
+        hasC = true
+        term = term[...-1]
+      else if char isnt '\\'
+        term += char
+      escaped = false
+
+  if hasC
+    modifiers['i'] = false
+  if (not hasC and not term.match('[A-Z]') and \
+      atom.config.get('vim-mode.useSmartcaseForSearch')) or hasc
+    modifiers['i'] = true
+
+  modFlags = Object.keys(modifiers).filter((key) -> modifiers[key]).join('')
+
+  try
+    new RegExp(term, modFlags)
+  catch
+    new RegExp(_.escapeRegExp(term), modFlags)
 
 class Ex
   @singleton: =>
@@ -196,47 +232,63 @@ class Ex
   sp: (args) => @split(args)
 
   substitute: ({ range, args, editor, vimState }) ->
-    args = args.trimLeft()
-    delim = args[0]
+    args_ = args.trimLeft()
+    delim = args_[0]
     if /[a-z1-9\\"|]/i.test(delim)
       throw new CommandError(
         "Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
-    delimRE = new RegExp("[^\\\\]#{delim}")
-    spl = []
-    args_ = args[1..]
-    while (i = args_.search(delimRE)) isnt -1
-      spl.push args_[..i]
-      args_ = args_[i + 2..]
-    if args_.length is 0 and spl.length is 3
-      throw new CommandError('Trailing characters')
-    else if args_.length isnt 0
-      spl.push args_
-    if spl.length > 3
-      throw new CommandError('Trailing characters')
-    spl[1] ?= ''
-    spl[2] ?= ''
-    notDelimRE = new RegExp("\\\\#{delim}", 'g')
-    spl[0] = spl[0].replace(notDelimRE, delim)
-    spl[1] = spl[1].replace(notDelimRE, delim)
+    args_ = args_[1..]
+    escapeChars = {t: '\t', n: '\n', r: '\r'}
+    parsed = ['', '', '']
+    parsing = 0
+    escaped = false
+    while (char = args_[0])?
+      args_ = args_[1..]
+      if char is delim
+        if not escaped
+          parsing++
+          if parsing > 2
+            throw new CommandError('Trailing characters')
+        else
+          parsed[parsing] = parsed[parsing][...-1]
+      else if char is '\\' and not escaped
+        parsed[parsing] += char
+        escaped = true
+      else if parsing == 1 and escaped and escapeChars[char]?
+        parsed[parsing] += escapeChars[char]
+        escaped = false
+      else
+        escaped = false
+        parsed[parsing] += char
+
+    [pattern, substition, flags] = parsed
+    if pattern is ''
+      pattern = vimState.getSearchHistoryItem()
+      if not pattern?
+        atom.beep()
+        throw new CommandError('No previous regular expression')
+    else
+      vimState.pushSearchHistory(pattern)
 
     try
-      pattern = new RegExp(spl[0], spl[2])
+      flagsObj = {}
+      flags.split('').forEach((flag) -> flagsObj[flag] = true)
+      patternRE = getSearchTerm(pattern, flagsObj)
     catch e
       if e.message.indexOf('Invalid flags supplied to RegExp constructor') is 0
-        # vim only says 'Trailing characters', but let's be more descriptive
         throw new CommandError("Invalid flags: #{e.message[45..]}")
       else if e.message.indexOf('Invalid regular expression: ') is 0
         throw new CommandError("Invalid RegEx: #{e.message[27..]}")
       else
         throw e
 
-    buffer = atom.workspace.getActiveTextEditor().buffer
-    atom.workspace.getActiveTextEditor().transact ->
+    editor.transact ->
       for line in [range[0]..range[1]]
-        buffer.scanInRange(pattern,
-          [[line, 0], [line, buffer.lines[line].length]],
-          ({match, matchText, range, stop, replace}) ->
-            replace(replaceGroups(match[..], spl[1]))
+        editor.scanInBufferRange(
+          patternRE,
+          [[line, 0], [line + 1, 0]],
+          ({match, replace}) ->
+            replace(replaceGroups(match[..], substition))
         )
 
   s: (args) => @substitute(args)
