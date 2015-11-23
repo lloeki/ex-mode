@@ -74,7 +74,12 @@ class Ex
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 
+  quitAll: ->
+    atom.workspace.getPanes()[0].destroy()
+
   q: => @quit()
+
+  qa: => @quitAll()
 
   tabedit: (range, args) =>
     if args.trim() isnt ''
@@ -177,9 +182,14 @@ class Ex
     @write(args...).then => @quit()
 
   xit: (args...) => @wq(args...)
-
-  wa: ->
+  saveAll: ->
     atom.workspace.saveAll()
+
+  wa: =>
+    @saveAll()
+  waq: =>
+    @saveAll()
+    @quit()
 
   split: (range, args) ->
     args = args.trim()
@@ -199,9 +209,9 @@ class Ex
   substitute: (range, args) ->
     args = args.trimLeft()
     delim = args[0]
-    if /[a-z1-9\\"|]/i.test(delim)
+    if /[a-z]/i.test(delim)
       throw new CommandError(
-        "Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
+        "Regular expressions can't be delimited by letters")
     delimRE = new RegExp("[^\\\\]#{delim}")
     spl = []
     args_ = args[1..]
