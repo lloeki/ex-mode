@@ -71,10 +71,17 @@ class Ex
   @registerCommand: (name, func) =>
     @singleton()[name] = func
 
+  # quit function is used on :q command
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
-
+  # quit function is used on :qa command shortcut
+  quitAll: ->
+    atom.workspace.getPanes()[0].destroy()
+  # both functions is referenced over here
+  # when this commands has trigered
   q: => @quit()
+  # ...and here
+  qa: => @quitAll()
 
   tabedit: (range, args) =>
     if args.trim() isnt ''
@@ -169,17 +176,28 @@ class Ex
       trySave(-> saveAs(fullPath)).then(deferred.resolve)
 
     deferred.promise
+  # save all files function
+  saveAll: ->
+    atom.workspace.saveAll()
+  # save all then quit
+  saveAllThenQuit: -  >
+    atom.workspace.saveAll()
+    @quitAll()
 
   w: (args...) =>
     @write(args...)
 
   wq: (args...) =>
     @write(args...).then => @quit()
+  # save all files :wa command
+  wa: =>
+    @saveAll()
+  # save all, then quit shortcut
+  waq: =>
+    @saveAllThenQuit()
 
   xit: (args...) => @wq(args...)
 
-  wa: ->
-    atom.workspace.saveAll()
 
   split: (range, args) ->
     args = args.trim()
@@ -199,9 +217,9 @@ class Ex
   substitute: (range, args) ->
     args = args.trimLeft()
     delim = args[0]
-    if /[a-z1-9\\"|]/i.test(delim)
+    if /[a-z]/i.test(delim)
       throw new CommandError(
-        "Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
+        "Regular expressions can't be delimited by letters")
     delimRE = new RegExp("[^\\\\]#{delim}")
     spl = []
     args_ = args[1..]
