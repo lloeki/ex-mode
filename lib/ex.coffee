@@ -180,7 +180,7 @@ class Ex
   saveAll: ->
     atom.workspace.saveAll()
   # save all then quit
-  saveAllThenQuit: -  >
+  saveAllThenQuit: ->
     atom.workspace.saveAll()
     @quitAll()
 
