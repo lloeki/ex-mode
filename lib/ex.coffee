@@ -2,6 +2,7 @@ path = require 'path'
 CommandError = require './command-error'
 fs = require 'fs-plus'
 VimOption = require './vim-option'
+_ = require 'underscore-plus'
 
 trySave = (func) ->
   deferred = Promise.defer()
@@ -32,8 +33,7 @@ trySave = (func) ->
 
   deferred.promise
 
-saveAs = (filePath) ->
-  editor = atom.workspace.getActiveTextEditor()
+saveAs = (filePath, editor) ->
   fs.writeFileSync(filePath, editor.getText())
 
 getFullPath = (filePath) ->
@@ -64,6 +64,41 @@ replaceGroups = (groups, string) ->
 
   replaced
 
+getSearchTerm = (term, modifiers = {'g': true}) ->
+
+  escaped = false
+  hasc = false
+  hasC = false
+  term_ = term
+  term = ''
+  for char in term_
+    if char is '\\' and not escaped
+      escaped = true
+      term += char
+    else
+      if char is 'c' and escaped
+        hasc = true
+        term = term[...-1]
+      else if char is 'C' and escaped
+        hasC = true
+        term = term[...-1]
+      else if char isnt '\\'
+        term += char
+      escaped = false
+
+  if hasC
+    modifiers['i'] = false
+  if (not hasC and not term.match('[A-Z]') and \
+      atom.config.get('vim-mode.useSmartcaseForSearch')) or hasc
+    modifiers['i'] = true
+
+  modFlags = Object.keys(modifiers).filter((key) -> modifiers[key]).join('')
+
+  try
+    new RegExp(term, modFlags)
+  catch
+    new RegExp(_.escapeRegExp(term), modFlags)
+
 class Ex
   @singleton: =>
     @ex ||= new Ex
@@ -76,21 +111,21 @@ class Ex
 
   q: => @quit()
 
-  tabedit: (range, args) =>
-    if args.trim() isnt ''
-      @edit(range, args)
+  tabedit: (args) =>
+    if args.args.trim() isnt ''
+      @edit(args)
     else
-      @tabnew(range, args)
+      @tabnew(args)
 
-  tabe: (args...) => @tabedit(args...)
+  tabe: (args) => @tabedit(args)
 
-  tabnew: (range, args) =>
+  tabnew: ({ range, args }) =>
     if args.trim() is ''
       atom.workspace.open()
     else
       @tabedit(range, args)
 
-  tabclose: (args...) => @quit(args...)
+  tabclose: (args) => @quit(args)
 
   tabc: => @tabclose()
 
@@ -106,15 +141,14 @@ class Ex
 
   tabp: => @tabprevious()
 
-  edit: (range, filePath) ->
-    filePath = filePath.trim()
+  edit: ({ range, args, editor }) ->
+    filePath = args.trim()
     if filePath[0] is '!'
       force = true
       filePath = filePath[1..].trim()
     else
       force = false
 
-    editor = atom.workspace.getActiveTextEditor()
     if editor.isModified() and not force
       throw new CommandError('No write since last change (add ! to override)')
     if filePath.indexOf(' ') isnt -1
@@ -132,14 +166,16 @@ class Ex
       else
         throw new CommandError('No file name')
 
-  e: (args...) => @edit(args...)
+  e: (args) => @edit(args)
 
   enew: ->
     buffer = atom.workspace.getActiveTextEditor().buffer
     buffer.setPath(undefined)
     buffer.load()
 
-  write: (range, filePath, saveas = false) ->
+  write: ({ range, args, editor, saveas }) ->
+    saveas ?= false
+    filePath = args
     if filePath[0] is '!'
       force = true
       filePath = filePath[1..]
@@ -171,27 +207,28 @@ class Ex
         throw new CommandError("File exists (add ! to override)")
       if saveas
         editor = atom.workspace.getActiveTextEditor()
-        trySave(-> editor.saveAs(fullPath)).then(deferred.resolve)
+        trySave(-> editor.saveAs(fullPath, editor)).then(deferred.resolve)
       else
-        trySave(-> saveAs(fullPath)).then(deferred.resolve)
+        trySave(-> saveAs(fullPath, editor)).then(deferred.resolve)
 
     deferred.promise
 
-  w: (args...) =>
-    @write(args...)
+  w: (args) =>
+    @write(args)
 
-  wq: (args...) =>
-    @write(args...).then => @quit()
+  wq: (args) =>
+    @write(args).then => @quit()
 
-  saveas: (range, filePath) =>
-    @write(range, filePath, true)
+  saveas: (args) =>
+    args.saveas = true
+    @write(args)
 
-  xit: (args...) => @wq(args...)
+  xit: (args) => @wq(args)
 
   wa: ->
     atom.workspace.saveAll()
 
-  split: (range, args) ->
+  split: ({ range, args }) ->
     args = args.trim()
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
@@ -204,55 +241,71 @@ class Ex
     else
       pane.splitUp(copyActiveItem: true)
 
-  sp: (args...) => @split(args...)
+  sp: (args) => @split(args)
 
-  substitute: (range, args) ->
-    args = args.trimLeft()
-    delim = args[0]
+  substitute: ({ range, args, editor, vimState }) ->
+    args_ = args.trimLeft()
+    delim = args_[0]
     if /[a-z1-9\\"|]/i.test(delim)
       throw new CommandError(
         "Regular expressions can't be delimited by alphanumeric characters, '\\', '\"' or '|'")
-    delimRE = new RegExp("[^\\\\]#{delim}")
-    spl = []
-    args_ = args[1..]
-    while (i = args_.search(delimRE)) isnt -1
-      spl.push args_[..i]
-      args_ = args_[i + 2..]
-    if args_.length is 0 and spl.length is 3
-      throw new CommandError('Trailing characters')
-    else if args_.length isnt 0
-      spl.push args_
-    if spl.length > 3
-      throw new CommandError('Trailing characters')
-    spl[1] ?= ''
-    spl[2] ?= ''
-    notDelimRE = new RegExp("\\\\#{delim}", 'g')
-    spl[0] = spl[0].replace(notDelimRE, delim)
-    spl[1] = spl[1].replace(notDelimRE, delim)
+    args_ = args_[1..]
+    escapeChars = {t: '\t', n: '\n', r: '\r'}
+    parsed = ['', '', '']
+    parsing = 0
+    escaped = false
+    while (char = args_[0])?
+      args_ = args_[1..]
+      if char is delim
+        if not escaped
+          parsing++
+          if parsing > 2
+            throw new CommandError('Trailing characters')
+        else
+          parsed[parsing] = parsed[parsing][...-1]
+      else if char is '\\' and not escaped
+        parsed[parsing] += char
+        escaped = true
+      else if parsing == 1 and escaped and escapeChars[char]?
+        parsed[parsing] += escapeChars[char]
+        escaped = false
+      else
+        escaped = false
+        parsed[parsing] += char
+
+    [pattern, substition, flags] = parsed
+    if pattern is ''
+      pattern = vimState.getSearchHistoryItem()
+      if not pattern?
+        atom.beep()
+        throw new CommandError('No previous regular expression')
+    else
+      vimState.pushSearchHistory(pattern)
 
     try
-      pattern = new RegExp(spl[0], spl[2])
+      flagsObj = {}
+      flags.split('').forEach((flag) -> flagsObj[flag] = true)
+      patternRE = getSearchTerm(pattern, flagsObj)
     catch e
       if e.message.indexOf('Invalid flags supplied to RegExp constructor') is 0
-        # vim only says 'Trailing characters', but let's be more descriptive
         throw new CommandError("Invalid flags: #{e.message[45..]}")
       else if e.message.indexOf('Invalid regular expression: ') is 0
         throw new CommandError("Invalid RegEx: #{e.message[27..]}")
       else
         throw e
 
-    buffer = atom.workspace.getActiveTextEditor().buffer
-    atom.workspace.getActiveTextEditor().transact ->
+    editor.transact ->
       for line in [range[0]..range[1]]
-        buffer.scanInRange(pattern,
-          [[line, 0], [line, buffer.lines[line].length]],
-          ({match, matchText, range, stop, replace}) ->
-            replace(replaceGroups(match[..], spl[1]))
+        editor.scanInBufferRange(
+          patternRE,
+          [[line, 0], [line + 1, 0]],
+          ({match, replace}) ->
+            replace(replaceGroups(match[..], substition))
         )
 
-  s: (args...) => @substitute(args...)
+  s: (args) => @substitute(args)
 
-  vsplit: (range, args) ->
+  vsplit: ({ range, args }) ->
     args = args.trim()
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
@@ -265,13 +318,13 @@ class Ex
     else
       pane.splitLeft(copyActiveItem: true)
 
-  vsp: (args...) => @vsplit(args...)
+  vsp: (args) => @vsplit(args)
 
-  delete: (range) ->
+  delete: ({ range }) ->
     range = [[range[0], 0], [range[1] + 1, 0]]
     atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
 
-  set: (range, args) ->
+  set: ({ range, args }) ->
     args = args.trim()
     if args == ""
       throw new CommandError("No option specified")
