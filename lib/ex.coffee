@@ -139,7 +139,7 @@ class Ex
     buffer.setPath(undefined)
     buffer.load()
 
-  write: (range, filePath) ->
+  write: (range, filePath, saveas = false) ->
     if filePath[0] is '!'
       force = true
       filePath = filePath[1..]
@@ -157,16 +157,23 @@ class Ex
     if filePath.length isnt 0
       fullPath = getFullPath(filePath)
     if editor.getPath()? and (not fullPath? or editor.getPath() == fullPath)
-      # Use editor.save when no path is given or the path to the file is given
-      trySave(-> editor.save()).then(deferred.resolve)
-      saved = true
+      if saveas
+        throw new CommandError("Argument required")
+      else
+        # Use editor.save when no path is given or the path to the file is given
+        trySave(-> editor.save()).then(deferred.resolve)
+        saved = true
     else if not fullPath?
       fullPath = atom.showSaveDialogSync()
 
     if not saved and fullPath?
       if not force and fs.existsSync(fullPath)
         throw new CommandError("File exists (add ! to override)")
-      trySave(-> saveAs(fullPath)).then(deferred.resolve)
+      if saveas
+        editor = atom.workspace.getActiveTextEditor()
+        trySave(-> editor.saveAs(fullPath)).then(deferred.resolve)
+      else
+        trySave(-> saveAs(fullPath)).then(deferred.resolve)
 
     deferred.promise
 
@@ -175,6 +182,9 @@ class Ex
 
   wq: (args...) =>
     @write(args...).then => @quit()
+
+  saveas: (range, filePath) =>
+    @write(range, filePath, true)
 
   xit: (args...) => @wq(args...)
 

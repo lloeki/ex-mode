@@ -151,6 +151,108 @@ describe "the commands", ->
           expect(atom.notifications.notifications).toEqual([])
           expect(fs.readFileSync(existsPath, 'utf-8')).toEqual('abc\ndef')
 
+  describe ":saveas", ->
+    describe "when editing a new file", ->
+      beforeEach ->
+        editor.getBuffer().setText('abc\ndef')
+
+      it "opens the save dialog", ->
+        spyOn(atom, 'showSaveDialogSync')
+        keydown(':')
+        submitNormalModeInputText('saveas')
+        expect(atom.showSaveDialogSync).toHaveBeenCalled()
+
+      it "saves when a path is specified in the save dialog", ->
+        filePath = projectPath('saveas-from-save-dialog')
+        spyOn(atom, 'showSaveDialogSync').andReturn(filePath)
+        keydown(':')
+        submitNormalModeInputText('saveas')
+        expect(fs.existsSync(filePath)).toBe(true)
+        expect(fs.readFileSync(filePath, 'utf-8')).toEqual('abc\ndef')
+
+      it "saves when a path is specified in the save dialog", ->
+        spyOn(atom, 'showSaveDialogSync').andReturn(undefined)
+        spyOn(fs, 'writeFileSync')
+        keydown(':')
+        submitNormalModeInputText('saveas')
+        expect(fs.writeFileSync.calls.length).toBe(0)
+
+    describe "when editing an existing file", ->
+      filePath = ''
+      i = 0
+
+      beforeEach ->
+        i++
+        filePath = projectPath("saveas-#{i}")
+        editor.setText('abc\ndef')
+        editor.saveAs(filePath)
+
+      it "complains if no path given", ->
+        editor.setText('abc')
+        keydown(':')
+        submitNormalModeInputText('saveas')
+        expect(atom.notifications.notifications[0].message).toEqual(
+          'Command error: Argument required'
+        )
+
+      describe "with a specified path", ->
+        newPath = ''
+
+        beforeEach ->
+          newPath = path.relative(dir, "#{filePath}.new")
+          editor.getBuffer().setText('abc')
+          keydown(':')
+
+        afterEach ->
+          submitNormalModeInputText("saveas #{newPath}")
+          newPath = path.resolve(dir, fs.normalize(newPath))
+          expect(fs.existsSync(newPath)).toBe(true)
+          expect(fs.readFileSync(newPath, 'utf-8')).toEqual('abc')
+          expect(editor.isModified()).toBe(false)
+          fs.removeSync(newPath)
+
+        it "saves to the path", ->
+
+        it "expands .", ->
+          newPath = path.join('.', newPath)
+
+        it "expands ..", ->
+          newPath = path.join('..', newPath)
+
+        it "expands ~", ->
+          newPath = path.join('~', newPath)
+
+      it "throws an error with more than one path", ->
+        keydown(':')
+        submitNormalModeInputText('saveas path1 path2')
+        expect(atom.notifications.notifications[0].message).toEqual(
+          'Command error: Only one file name allowed'
+        )
+
+      describe "when the file already exists", ->
+        existsPath = ''
+
+        beforeEach ->
+          existsPath = projectPath('saveas-exists')
+          fs.writeFileSync(existsPath, 'abc')
+
+        afterEach ->
+          fs.removeSync(existsPath)
+
+        it "throws an error if the file already exists", ->
+          keydown(':')
+          submitNormalModeInputText("saveas #{existsPath}")
+          expect(atom.notifications.notifications[0].message).toEqual(
+            'Command error: File exists (add ! to override)'
+          )
+          expect(fs.readFileSync(existsPath, 'utf-8')).toEqual('abc')
+
+        it "writes if forced with :saveas!", ->
+          keydown(':')
+          submitNormalModeInputText("saveas! #{existsPath}")
+          expect(atom.notifications.notifications).toEqual([])
+          expect(fs.readFileSync(existsPath, 'utf-8')).toEqual('abc\ndef')
+
   describe ":quit", ->
     pane = null
     beforeEach ->
