@@ -113,7 +113,7 @@ class Ex
     atom.workspace.getActivePane().destroyActiveItem()
 
   quitall: ->
-    atom.workspace.getPanes()[0].destroy()
+    atom.close()
 
   q: => @quit()
 
@@ -234,7 +234,7 @@ class Ex
     @wall()
 
   wqall: =>
-    atom.workspace.saveAll()
+    @wall()
     @quitall()
 
   wqa: =>
