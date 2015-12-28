@@ -30,6 +30,7 @@ module.exports = ExMode =
 
   provideEx: ->
     registerCommand: Ex.registerCommand.bind(Ex)
+    registerAlias: Ex.registerAlias.bind(Ex)
 
   consumeVim: (vim) ->
     @vim = vim
