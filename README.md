@@ -18,6 +18,8 @@ atom.packages.onDidActivatePackage (pack) ->
   if pack.name == 'ex-mode'
     Ex = pack.mainModule.provideEx()
     Ex.registerCommand 'z', -> console.log("Zzzzzz...")
+    # Register an alias - Now :W acts like :w
+    Ex.registerAlias 'W', 'w'
 ```
 
 See `lib/ex.coffee` for some examples commands. Contributions are very welcome!

@@ -4,7 +4,8 @@ os = require 'os'
 uuid = require 'node-uuid'
 helpers = require './spec-helper'
 
-Ex = require('../lib/ex').singleton()
+ExClass = require('../lib/ex')
+Ex = ExClass.singleton()
 
 describe "the commands", ->
   [editor, editorElement, vimState, exState, dir, dir2] = []
@@ -732,3 +733,21 @@ describe "the commands", ->
         atom.commands.dispatch(editorElement, 'ex-mode:open')
         submitNormalModeInputText(':set nonumber')
         expect(atom.config.get('editor.showLineNumbers')).toBe(false)
+
+  describe "aliases", ->
+    it "calls the aliased function without arguments", ->
+      ExClass.registerAlias('W', 'w')
+      spyOn(Ex, 'write')
+      keydown(':')
+      submitNormalModeInputText('W')
+      expect(Ex.write).toHaveBeenCalled()
+
+    it "calls the aliased function with arguments", ->
+      ExClass.registerAlias('W', 'write')
+      spyOn(Ex, 'W').andCallThrough()
+      spyOn(Ex, 'write')
+      keydown(':')
+      submitNormalModeInputText('W')
+      WArgs = Ex.W.calls[0].args[0]
+      writeArgs = Ex.write.calls[0].args[0]
+      expect(WArgs).toBe writeArgs
