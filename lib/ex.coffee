@@ -107,7 +107,7 @@ class Ex
     @singleton()[name] = func
 
   @registerAlias: (alias, name) =>
-    @singleton()[alias] = @singleton()[name]
+    @singleton()[alias] = (args) => @singleton()[name](args)
 
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
