@@ -112,7 +112,12 @@ class Ex
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 
+  quitall: ->
+    atom.workspace.getPanes()[0].destroy()
+
   q: => @quit()
+
+  qa: => @quitall()
 
   tabedit: (args) =>
     if args.args.trim() isnt ''
@@ -216,11 +221,30 @@ class Ex
 
     deferred.promise
 
+  wall: ->
+    atom.workspace.saveAll()
+
   w: (args) =>
     @write(args)
 
   wq: (args) =>
     @write(args).then => @quit()
+
+  wa: =>
+    @wall()
+
+  wqall: =>
+    atom.workspace.saveAll()
+    @quitall()
+
+  wqa: =>
+    @wqall()
+
+  xall: =>
+    @wqall()
+
+  xa: =>
+    @wqall()
 
   saveas: (args) =>
     args.saveas = true
@@ -228,8 +252,6 @@ class Ex
 
   xit: (args) => @wq(args)
 
-  wa: ->
-    atom.workspace.saveAll()
 
   split: ({ range, args }) ->
     args = args.trim()
