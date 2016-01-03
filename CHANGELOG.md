@@ -1,3 +1,11 @@
+## 0.8.0
+* Don't allow :s delimiters not allowed by vim (@jacwah)
+* Backspace over empty `:` now cancels ex-mode (@shamrin)
+* Added option to register alias keys in atom init config (@GertjanReynaert)
+* Allow `:substitute` to replace empty with an empty string and replacing the last search item (@jazzpi)
+* Added `:wall`, `:quitall` and `:wqall` commands (@caiocutrim)
+* Added `:saveas` command (@bakert)
+
 ## 0.6.0
 * No project/multiple projects paths (uses first one)
 * Support for :set
