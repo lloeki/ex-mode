@@ -162,6 +162,13 @@ describe "the commands", ->
           expect(atom.notifications.notifications).toEqual([])
           expect(fs.readFileSync(existsPath, 'utf-8')).toEqual('abc\ndef')
 
+  describe ":wall", ->
+    it "saves all", ->
+      spyOn(atom.workspace, 'saveAll')
+      keydown(':')
+      submitNormalModeInputText('wall')
+      expect(atom.workspace.saveAll).toHaveBeenCalled()
+
   describe ":saveas", ->
     describe "when editing a new file", ->
       beforeEach ->
@@ -288,6 +295,13 @@ describe "the commands", ->
         submitNormalModeInputText('quit')
         expect(pane.promptToSaveItem).toHaveBeenCalled()
 
+  describe ":quitall", ->
+    it "closes Atom", ->
+      spyOn(atom, 'close')
+      keydown(':')
+      submitNormalModeInputText('quitall')
+      expect(atom.close).toHaveBeenCalled()
+
   describe ":tabclose", ->
     it "acts as an alias to :quit", ->
       spyOn(Ex, 'tabclose').andCallThrough()
@@ -375,6 +389,15 @@ describe "the commands", ->
       keydown(':')
       submitNormalModeInputText('xit')
       expect(Ex.wq).toHaveBeenCalled()
+
+  describe ":wqall", ->
+    it "calls :wall, then :quitall", ->
+      spyOn(Ex, 'wall')
+      spyOn(Ex, 'quitall')
+      keydown(':')
+      submitNormalModeInputText('wqall')
+      expect(Ex.wall).toHaveBeenCalled()
+      expect(Ex.quitall).toHaveBeenCalled()
 
   describe ":edit", ->
     describe "without a file name", ->

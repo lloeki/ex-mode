@@ -117,7 +117,7 @@ class Ex
 
   q: => @quit()
 
-  qa: => @quitall()
+  qall: => @quitall()
 
   tabedit: (args) =>
     if args.args.trim() isnt ''
