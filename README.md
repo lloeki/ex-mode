@@ -2,8 +2,6 @@
 
 ex-mode for Atom's vim-mode
 
-**I now only rarely use Atom and am looking for a new maintainer for this project. Please chime in [here](https://github.com/lloeki/ex-mode/issues/116).**
-
 ## Use
 
 Install both [vim-mode](https://github.com/atom/vim-mode) and ex-mode. Type `:` in command mode. Enter `w` or `write`.
