@@ -230,6 +230,12 @@ class Ex
   wq: (args) =>
     @write(args).then => @quit()
 
+  Wq: (args) =>
+    @write(args).then => @quit()
+
+  WQ: (args) =>
+    @write(args).then => @quit()
+
   wa: =>
     @wall()
 
