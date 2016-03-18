@@ -35,3 +35,15 @@ module.exports = ExMode =
   consumeVim: (vim) ->
     @vim = vim
     @globalExState.setVim(vim)
+
+  config:
+    splitbelow:
+      title: 'Split below'
+      description: 'when splitting, split from below'
+      type: 'boolean'
+      default: 'false'
+    splitright:
+      title: 'Split right'
+      description: 'when splitting, split from right'
+      type: 'boolean'
+      default: 'false'
