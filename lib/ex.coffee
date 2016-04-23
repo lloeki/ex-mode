@@ -349,6 +349,11 @@ class Ex
     range = [[range[0], 0], [range[1] + 1, 0]]
     atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
 
+  yank: ({ range }) ->
+    range = [[range[0], 0], [range[1] + 1, 0]]
+    txt = atom.workspace.getActiveTextEditor().getTextInBufferRange(range)
+    atom.clipboard.write(txt);
+
   set: ({ range, args }) ->
     args = args.trim()
     if args == ""

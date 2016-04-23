@@ -585,6 +585,23 @@ describe "the commands", ->
       submitNormalModeInputText(':%substitute/abc/ghi/ig')
       expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nghiaghi')
 
+    describe ":yank", ->
+      beforeEach ->
+        editor.setText('abc\ndef\nghi\njkl')
+        editor.setCursorBufferPosition([2, 0])
+
+      it "yanks the current line", ->
+        keydown(':')
+        submitNormalModeInputText('yank')
+        expect(atom.clipboard.read()).toEqual('ghi\n')
+
+      it "yanks the lines in the given range", ->
+        processedOpStack = false
+        exState.onDidProcessOpStack -> processedOpStack = true
+        keydown(':')
+        submitNormalModeInputText('1,2yank')
+        expect(atom.clipboard.read()).toEqual('abc\ndef\n')
+
     describe "illegal delimiters", ->
       test = (delim) ->
         keydown(':')
