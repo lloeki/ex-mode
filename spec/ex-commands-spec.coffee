@@ -596,8 +596,6 @@ describe "the commands", ->
         expect(atom.clipboard.read()).toEqual('ghi\n')
 
       it "yanks the lines in the given range", ->
-        processedOpStack = false
-        exState.onDidProcessOpStack -> processedOpStack = true
         keydown(':')
         submitNormalModeInputText('1,2yank')
         expect(atom.clipboard.read()).toEqual('abc\ndef\n')
