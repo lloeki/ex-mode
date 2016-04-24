@@ -347,7 +347,12 @@ class Ex
 
   delete: ({ range }) ->
     range = [[range[0], 0], [range[1] + 1, 0]]
-    atom.workspace.getActiveTextEditor().buffer.setTextInRange(range, '')
+    editor = atom.workspace.getActiveTextEditor()
+
+    text = editor.getTextInBufferRange(range)
+    atom.clipboard.write(text)
+
+    editor.buffer.setTextInRange(range, '')
 
   set: ({ range, args }) ->
     args = args.trim()

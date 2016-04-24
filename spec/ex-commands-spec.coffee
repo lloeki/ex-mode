@@ -530,6 +530,11 @@ describe "the commands", ->
       submitNormalModeInputText('delete')
       expect(editor.getText()).toEqual('abc\ndef\njkl')
 
+    it "copies the deleted text", ->
+      keydown(':')
+      submitNormalModeInputText('delete')
+      expect(atom.clipboard.read()).toEqual('ghi\n')
+
     it "deletes the lines in the given range", ->
       processedOpStack = false
       exState.onDidProcessOpStack -> processedOpStack = true
