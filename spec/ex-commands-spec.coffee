@@ -497,26 +497,43 @@ describe "the commands", ->
       expect(atom.workspace.open).toHaveBeenCalled()
 
   describe ":split", ->
-    it "splits the current file upwards", ->
+    it "splits the current file upwards/downward", ->
       pane = atom.workspace.getActivePane()
-      spyOn(pane, 'splitUp').andCallThrough()
-      filePath = projectPath('split')
-      editor.saveAs(filePath)
-      keydown(':')
-      submitNormalModeInputText('split')
-      expect(pane.splitUp).toHaveBeenCalled()
+      if atom.config.get('ex-mode.splitbelow')
+        spyOn(pane, 'splitDown').andCallThrough()
+        filePath = projectPath('split')
+        editor.saveAs(filePath)
+        keydown(':')
+        submitNormalModeInputText('split')
+        expect(pane.splitDown).toHaveBeenCalled()
+      else
+        spyOn(pane, 'splitUp').andCallThrough()
+        filePath = projectPath('split')
+        editor.saveAs(filePath)
+        keydown(':')
+        submitNormalModeInputText('split')
+        expect(pane.splitUp).toHaveBeenCalled()
       # FIXME: Should test whether the new pane contains a TextEditor
       #        pointing to the same path
 
   describe ":vsplit", ->
-    it "splits the current file to the left", ->
-      pane = atom.workspace.getActivePane()
-      spyOn(pane, 'splitLeft').andCallThrough()
-      filePath = projectPath('vsplit')
-      editor.saveAs(filePath)
-      keydown(':')
-      submitNormalModeInputText('vsplit')
-      expect(pane.splitLeft).toHaveBeenCalled()
+    it "splits the current file to the left/right", ->
+      if atom.config.get('ex-mode.splitright')
+        pane = atom.workspace.getActivePane()
+        spyOn(pane, 'splitRight').andCallThrough()
+        filePath = projectPath('vsplit')
+        editor.saveAs(filePath)
+        keydown(':')
+        submitNormalModeInputText('vsplit')
+        expect(pane.splitLeft).toHaveBeenCalled()
+      else
+        pane = atom.workspace.getActivePane()
+        spyOn(pane, 'splitLeft').andCallThrough()
+        filePath = projectPath('vsplit')
+        editor.saveAs(filePath)
+        keydown(':')
+        submitNormalModeInputText('vsplit')
+        expect(pane.splitLeft).toHaveBeenCalled()
       # FIXME: Should test whether the new pane contains a TextEditor
       #        pointing to the same path
 
