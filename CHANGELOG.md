@@ -1,7 +1,8 @@
 ## 0.9.0
 
-* Added support for yank commands, ex `:1,10y` (@posgarou) 
+* Added support for yank commands, ex `:1,10y` (@posgarou)
 * Added contributor guidelines, including a pull request template
+* Added ability to control splitting with `splitright`, and `splitbelow` (@dragonxwang)
 
 ### Fixes
 
