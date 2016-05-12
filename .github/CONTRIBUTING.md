@@ -15,15 +15,15 @@ This project is accepting new maintainers. Interested parties should
 
 - If the PR *fixes* or should result in the closure of any issues, use the `fixes #` or `closes #` syntax to ensure issue will
 close when your PR is merged
-- All pull-requests that fix a bug, or add a new feature, *must* have accompanying tests, before they will be merged. If you want
+- All pull-requests that fix a bug or add a new feature *must* have accompanying tests before they will be merged. If you want
 to speed up the merge of your PR, please contribute these tests
- - *note*: if you submit a PR, but are unsure how to write tests, please set the "needs tests" label
+ - *note*: if you submit a PR but are unsure how to write tests, please begin your PR title with `[needs tests]`
 - Please use the [pull request template](PULL_REQUEST_TEMPLATE.md) as a guide for submitting your PR.
-- Include a `/cc` for @LongLiveCHIEF and @jazzpi, the current maintainers
+- Include a `/cc` for @LongLiveCHIEF and @jazzpi the current maintainers
 
 ## Issues
 
 - Be aware of the responsibilities of `ex-mode` vs `vim-mode`
-- If you have identified a bug, we would welcome any Pull Requests that either:
+- If you have identified a bug we would welcome any Pull Requests that either:
  - Fix the issue
  - Create failing tests to confirm the bug
