@@ -127,11 +127,11 @@ class Ex
 
   tabe: (args) => @tabedit(args)
 
-  tabnew: ({ range, args }) =>
-    if args.trim() is ''
+  tabnew: (args) =>
+    if args.args.trim() is ''
       atom.workspace.open()
     else
-      @tabedit(range, args)
+      @tabedit(args)
 
   tabclose: (args) => @quit(args)
 
