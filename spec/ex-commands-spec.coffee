@@ -496,6 +496,14 @@ describe "the commands", ->
       submitNormalModeInputText('tabnew')
       expect(atom.workspace.open).toHaveBeenCalled()
 
+    it "opens a new tab for editing when provided an argument", ->
+      spyOn(Ex, 'tabnew').andCallThrough()
+      spyOn(Ex, 'tabedit')
+      keydown(':')
+      submitNormalModeInputText('tabnew tabnew-test')
+      expect(Ex.tabedit)
+        .toHaveBeenCalledWith(Ex.tabnew.calls[0].args...)
+
   describe ":split", ->
     it "splits the current file upwards/downward", ->
       pane = atom.workspace.getActivePane()
