@@ -1,3 +1,13 @@
+## 0.9.0
+
+* Added support for yank commands, ex `:1,10y` (@posgarou)
+* Added contributor guidelines, including a pull request template
+* Added ability to control splitting with `splitright`, and `splitbelow` (@dragonxwang)
+
+### Fixes
+
+* delete commands now add text to clipboard, ex `:1,4d`
+
 ## 0.8.0
 * Don't allow :s delimiters not allowed by vim (@jacwah)
 * Backspace over empty `:` now cancels ex-mode (@shamrin)
