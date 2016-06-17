@@ -127,11 +127,11 @@ class Ex
 
   tabe: (args) => @tabedit(args)
 
-  tabnew: ({ range, args }) =>
-    if args.trim() is ''
+  tabnew: (args) =>
+    if args.args.trim() is ''
       atom.workspace.open()
     else
-      @tabedit(range, args)
+      @tabedit(args)
 
   tabclose: (args) => @quit(args)
 
@@ -258,13 +258,23 @@ class Ex
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
     pane = atom.workspace.getActivePane()
-    if filePaths? and filePaths.length > 0
-      newPane = pane.splitUp()
-      for file in filePaths
-        do ->
-          atom.workspace.openURIInPane file, newPane
+    if atom.config.get('ex-mode.splitbelow')
+      if filePaths? and filePaths.length > 0
+        newPane = pane.splitDown()
+        for file in filePaths
+          do ->
+            atom.workspace.openURIInPane file, newPane
+      else
+        pane.splitDown(copyActiveItem: true)
     else
-      pane.splitUp(copyActiveItem: true)
+      if filePaths? and filePaths.length > 0
+        newPane = pane.splitUp()
+        for file in filePaths
+          do ->
+            atom.workspace.openURIInPane file, newPane
+      else
+        pane.splitUp(copyActiveItem: true)
+
 
   sp: (args) => @split(args)
 
@@ -335,13 +345,22 @@ class Ex
     filePaths = args.split(' ')
     filePaths = undefined if filePaths.length is 1 and filePaths[0] is ''
     pane = atom.workspace.getActivePane()
-    if filePaths? and filePaths.length > 0
-      newPane = pane.splitLeft()
-      for file in filePaths
-        do ->
-          atom.workspace.openURIInPane file, newPane
+    if atom.config.get('ex-mode.splitright')
+      if filePaths? and filePaths.length > 0
+        newPane = pane.splitRight()
+        for file in filePaths
+          do ->
+            atom.workspace.openURIInPane file, newPane
+      else
+        pane.splitRight(copyActiveItem: true)
     else
-      pane.splitLeft(copyActiveItem: true)
+      if filePaths? and filePaths.length > 0
+        newPane = pane.splitLeft()
+        for file in filePaths
+          do ->
+            atom.workspace.openURIInPane file, newPane
+      else
+        pane.splitLeft(copyActiveItem: true)
 
   vsp: (args) => @vsplit(args)
 
