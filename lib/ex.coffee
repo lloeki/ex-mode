@@ -3,9 +3,10 @@ CommandError = require './command-error'
 fs = require 'fs-plus'
 VimOption = require './vim-option'
 _ = require 'underscore-plus'
+Promise = require 'bluebird'
 
 trySave = (func) ->
-  deferred = Promise.defer()
+  deferred = Promise.defer() 
 
   try
     func()
