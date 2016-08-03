@@ -1,5 +1,6 @@
 fs = require 'fs'
 path = require 'path'
+os = require 'os'
 Ex = require './ex'
 
 module.exports =
@@ -12,6 +13,12 @@ class AutoComplete
     @autoCompleteIndex = 0
     @autoCompleteText = null
     @completions = []
+
+  expandTilde: (filePath) ->
+    if filePath.charAt(0) == '~'
+      return os.homedir() + filePath.slice(1)
+    else
+      return filePath
 
   getAutocomplete: (text) ->
     if !@autoCompleteText
@@ -48,6 +55,8 @@ class AutoComplete
       return @filterByPrefix(@commands, command)
 
   getFilePathCompletion: (command, filePath) ->
+      filePath = @expandTilde(filePath)
+
       if filePath.endsWith(path.sep)
         basePath = path.dirname(filePath + '.')
         baseName = ''
