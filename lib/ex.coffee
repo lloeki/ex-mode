@@ -109,6 +109,9 @@ class Ex
   @registerAlias: (alias, name) =>
     @singleton()[alias] = (args) => @singleton()[name](args)
 
+  @getCommands: () =>
+    Object.keys(@singleton())
+
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 

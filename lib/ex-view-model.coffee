@@ -1,4 +1,6 @@
 {ViewModel, Input} = require './view-model'
+AutoComplete = require './autocomplete'
+Ex = require './ex'
 
 module.exports =
 class ExViewModel extends ViewModel
@@ -6,14 +8,30 @@ class ExViewModel extends ViewModel
     super(@exCommand, class: 'command')
     @historyIndex = -1
 
+    @view.editorElement.addEventListener('keydown', @tabAutocomplete)
     atom.commands.add(@view.editorElement, 'core:move-up', @increaseHistoryEx)
     atom.commands.add(@view.editorElement, 'core:move-down', @decreaseHistoryEx)
+
+    @autoComplete = new AutoComplete(Ex.getCommands())
 
   restoreHistory: (index) ->
     @view.editorElement.getModel().setText(@history(index).value)
 
   history: (index) ->
     @exState.getExHistoryItem(index)
+
+  tabAutocomplete: (event) =>
+    if event.keyCode == 9
+      event.stopPropagation()
+      event.preventDefault()
+
+      completed = @autoComplete.getAutocomplete(@view.editorElement.getModel().getText())
+      if completed
+        @view.editorElement.getModel().setText(completed)
+
+      return false
+    else
+      @autoComplete.resetCompletion()
 
   increaseHistoryEx: =>
     if @history(@historyIndex + 1)?
