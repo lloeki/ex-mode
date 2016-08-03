@@ -4,8 +4,17 @@ fs = require 'fs-plus'
 VimOption = require './vim-option'
 _ = require 'underscore-plus'
 
+defer = () ->
+  deferred = {}
+  deferred.promise = new Promise((resolve, reject) ->
+    deferred.resolve = resolve
+    deferred.reject = reject
+  )
+  return deferred
+
+
 trySave = (func) ->
-  deferred = Promise.defer()
+  deferred = defer()
 
   try
     func()
@@ -194,7 +203,7 @@ class Ex
     if filePath.indexOf(' ') isnt -1
       throw new CommandError('Only one file name allowed')
 
-    deferred = Promise.defer()
+    deferred = defer()
 
     editor = atom.workspace.getActiveTextEditor()
     saved = false
