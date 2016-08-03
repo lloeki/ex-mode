@@ -1,4 +1,4 @@
-## 0.10.0
+## 0.11.0
 
 * Stop using non-standard Promise.defer (fixes issue with `:w`) (@AsaAyers)
 
