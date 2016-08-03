@@ -1,3 +1,7 @@
+## 0.10.0
+
+* Stop using non-standard Promise.defer (fixes issue with `:w`) (@AsaAyers)
+
 ## 0.9.0
 
 * Added support for yank commands, ex `:1,10y` (@posgarou)
