@@ -117,7 +117,7 @@ describe "the commands", ->
           newPath = path.resolve(dir, fs.normalize(newPath))
           expect(fs.existsSync(newPath)).toBe(true)
           expect(fs.readFileSync(newPath, 'utf-8')).toEqual('abc')
-          expect(editor.isModified()).toBe(true)
+          expect(editor.isModified()).toBe(false)
           fs.removeSync(newPath)
 
         it "saves to the path", ->
