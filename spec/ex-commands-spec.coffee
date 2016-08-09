@@ -79,6 +79,7 @@ describe "the commands", ->
         submitNormalModeInputText('write')
         expect(fs.existsSync(filePath)).toBe(true)
         expect(fs.readFileSync(filePath, 'utf-8')).toEqual('abc\ndef')
+        expect(editor.isModified()).toBe(false)
 
       it "saves when a path is specified in the save dialog", ->
         spyOn(atom, 'showSaveDialogSync').andReturn(undefined)

@@ -222,7 +222,7 @@ class Ex
     if not saved and fullPath?
       if not force and fs.existsSync(fullPath)
         throw new CommandError("File exists (add ! to override)")
-      if saveas
+      if saveas or editor.getFileName() == null
         editor = atom.workspace.getActiveTextEditor()
         trySave(-> editor.saveAs(fullPath, editor)).then(deferred.resolve)
       else
