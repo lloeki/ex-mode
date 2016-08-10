@@ -34,7 +34,7 @@ class AutoComplete
       return @getCompletion(() => @getCommandCompletion(cmd))
 
   filterByPrefix: (commands, prefix) ->
-    commands.filter((f) => f.startsWith(prefix))
+    commands.sort().filter((f) => f.startsWith(prefix))
 
   getCompletion: (completeFunc) ->
     if @completions.length == 0
@@ -51,8 +51,7 @@ class AutoComplete
       return complete
 
   getCommandCompletion: (command) ->
-    if @completions.length == 0
-      return @filterByPrefix(@commands, command)
+    return @filterByPrefix(@commands, command)
 
   getFilePathCompletion: (command, filePath) ->
       filePath = @expandTilde(filePath)
