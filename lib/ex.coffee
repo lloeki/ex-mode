@@ -118,6 +118,11 @@ class Ex
   @registerAlias: (alias, name) =>
     @singleton()[alias] = (args) => @singleton()[name](args)
 
+  @getCommands: () =>
+    Object.keys(Ex.singleton()).concat(Object.keys(Ex.prototype)).filter((cmd, index, list) ->
+      list.indexOf(cmd) == index
+    )
+
   quit: ->
     atom.workspace.getActivePane().destroyActiveItem()
 
