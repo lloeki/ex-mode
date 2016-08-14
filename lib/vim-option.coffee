@@ -20,4 +20,28 @@ class VimOption
   nonu: =>
     @nonumber()
 
+  splitright: =>
+    atom.config.set("ex-mode.splitright", true)
+
+  spr: =>
+    @splitright()
+
+  nosplitright: =>
+    atom.config.set("ex-mode.splitright", false)
+
+  nospr: =>
+    @nosplitright()
+
+  splitbelow: =>
+    atom.config.set("ex-mode.splitbelow", true)
+
+  sb: =>
+    @splitbelow()
+
+  nosplitbelow: =>
+    atom.config.set("ex-mode.splitbelow", false)
+
+  nosb: =>
+    @nosplitbelow()
+
 module.exports = VimOption
