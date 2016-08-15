@@ -44,4 +44,16 @@ class VimOption
   nosb: =>
     @nosplitbelow()
 
+  smartcase: =>
+    atom.config.set("vim-mode.useSmartcaseForSearch", true)
+
+  scs: =>
+    @smartcase()
+
+  nosmartcase: =>
+    atom.config.set("vim-mode.useSmartcaseForSearch", false)
+
+  noscs: =>
+    @nosmartcase()
+
 module.exports = VimOption

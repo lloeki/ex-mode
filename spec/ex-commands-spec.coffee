@@ -835,6 +835,20 @@ describe "the commands", ->
         submitNormalModeInputText(':set nosplitbelow')
         expect(atom.config.get('ex-mode.splitbelow')).toBe(false)
 
+      it "sets (no)s(mart)c(a)s(e)", ->
+        openEx()
+        submitNormalModeInputText(':set scs')
+        expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(true)
+        openEx()
+        submitNormalModeInputText(':set noscs')
+        expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(false)
+        openEx()
+        submitNormalModeInputText(':set smartcase')
+        expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(true)
+        openEx()
+        submitNormalModeInputText(':set nosmartcase')
+        expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(false)
+
   describe "aliases", ->
     it "calls the aliased function without arguments", ->
       ExClass.registerAlias('W', 'w')
