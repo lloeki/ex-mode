@@ -60,4 +60,13 @@ class ExState
     @clearOpStack()
     @emitter.emit('processed-op-stack')
 
+  # Returns all non-empty selections
+  getSelections: ->
+    filtered = {}
+    for id, selection of @editor.getSelections()
+      unless selection.isEmpty()
+        filtered[id] = selection
+
+    return filtered
+
 module.exports = ExState
