@@ -3,13 +3,8 @@
 Current Maintainers:
 
 - [@jazzpi](https://github.com/jazzpi)
-- [@LongLiveCHIEF](https://github.com/LongLiveCHIEF)
 
-This project is accepting new maintainers. Interested parties should
-
-1. Open a new issue, titled: `New Maintainer Request`
-2. Assign the issue to [@lloeki](https://github.com/lloeki)
-3. The last line of your request should `/cc @jazzpi @LongLiveCHIEF`
+This project is accepting new maintainers. Interested parties should open a new issue titled `New Maintainer Request`.
 
 ## Pull Requests
 
@@ -19,7 +14,6 @@ close when your PR is merged
 to speed up the merge of your PR, please contribute these tests
  - *note*: if you submit a PR but are unsure how to write tests, please begin your PR title with `[needs tests]`
 - Please use the [pull request template](PULL_REQUEST_TEMPLATE.md) as a guide for submitting your PR.
-- Include a `/cc` for @LongLiveCHIEF and @jazzpi the current maintainers
 
 ## Issues
 
