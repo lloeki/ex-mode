@@ -65,6 +65,68 @@ describe "the commands", ->
   openEx = ->
     atom.commands.dispatch(editorElement, "ex-mode:open")
 
+  describe "as a motion", ->
+    beforeEach ->
+      editor.setCursorBufferPosition([0, 0])
+
+    it "moves the cursor to a specific line", ->
+      openEx()
+      submitNormalModeInputText '2'
+
+      expect(editor.getCursorBufferPosition()).toEqual [1, 0]
+
+    it "moves to the second address", ->
+      openEx()
+      submitNormalModeInputText '1,3'
+
+      expect(editor.getCursorBufferPosition()).toEqual [2, 0]
+
+    it "works with offsets", ->
+      openEx()
+      submitNormalModeInputText '2+1'
+      expect(editor.getCursorBufferPosition()).toEqual [2, 0]
+
+      openEx()
+      submitNormalModeInputText '-2'
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+    it "doesn't move when the address is the current line", ->
+      openEx()
+      submitNormalModeInputText '.'
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+      openEx()
+      submitNormalModeInputText ','
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+    it "moves to the last line", ->
+      openEx()
+      submitNormalModeInputText '$'
+      expect(editor.getCursorBufferPosition()).toEqual [3, 0]
+
+    it "moves to a mark's line", ->
+      keydown('l')
+      keydown('m')
+      commandModeInputKeydown 'a'
+      keydown('j')
+      openEx()
+      submitNormalModeInputText "'a"
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+    it "moves to a specified search", ->
+      openEx()
+      submitNormalModeInputText '/def'
+      expect(editor.getCursorBufferPosition()).toEqual [1, 0]
+
+      openEx()
+      submitNormalModeInputText '?abc'
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+      editor.setCursorBufferPosition([3, 0])
+      openEx()
+      submitNormalModeInputText '/ef'
+      expect(editor.getCursorBufferPosition()).toEqual [1, 0]
+
   describe ":write", ->
     describe "when editing a new file", ->
       beforeEach ->

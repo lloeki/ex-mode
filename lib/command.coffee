@@ -24,7 +24,7 @@ class Command
       mark = @vimState.marks[str[1]]
       unless mark?
         throw new CommandError("Mark #{str} not set.")
-      addr = mark.bufferMarker.range.end.row
+      addr = mark.getEndBufferPosition().row
     else if str[0] is "/"
       addr = Find.findNextInBuffer(@editor.buffer, curPos, str[1...-1])
       unless addr?
