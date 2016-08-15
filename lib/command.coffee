@@ -5,7 +5,8 @@ CommandError = require './command-error'
 
 class Command
   constructor: (@editor, @exState) ->
-    @viewModel = new ExViewModel(@)
+    @selections = @exState.getSelections()
+    @viewModel = new ExViewModel(@, Object.keys(@selections).length > 0)
 
   parseAddr: (str, curPos) ->
     if str is '.'
@@ -97,32 +98,39 @@ class Command
 
       curPos = @editor.getCursorBufferPosition()
 
-      if addr1?
-        address1 = @parseAddr(addr1, curPos)
+      # Special case: run command on selection. This can't be handled by simply
+      # parsing the mark since vim-mode doesn't set it (and it would be fairly
+      # useless with multiple selections)
+      if addr1 is "'<" and addr2 is "'>"
+        runOverSelections = true
       else
-        # If no addr1 is given (,+3), assume it is '.'
-        address1 = curPos.row
-      if off1?
-        address1 += @parseOffset(off1)
+        runOverSelections = false
+        if addr1?
+          address1 = @parseAddr(addr1, curPos)
+        else
+          # If no addr1 is given (,+3), assume it is '.'
+          address1 = curPos.row
+        if off1?
+          address1 += @parseOffset(off1)
 
-      address1 = 0 if address1 is -1
+        address1 = 0 if address1 is -1
 
-      if address1 < 0 or address1 > lastLine
-        throw new CommandError('Invalid range')
+        if address1 < 0 or address1 > lastLine
+          throw new CommandError('Invalid range')
 
-      if addr2?
-        address2 = @parseAddr(addr2, curPos)
-      if off2?
-        address2 += @parseOffset(off2)
+        if addr2?
+          address2 = @parseAddr(addr2, curPos)
+        if off2?
+          address2 += @parseOffset(off2)
 
-      if address2 < 0 or address2 > lastLine
-        throw new CommandError('Invalid range')
+        if address2 < 0 or address2 > lastLine
+          throw new CommandError('Invalid range')
 
-      if address2 < address1
-        throw new CommandError('Backwards range given')
+        if address2 < address1
+          throw new CommandError('Backwards range given')
 
       range = [address1, if address2? then address2 else address1]
-      cl = cl[match?.length..]
+    cl = cl[match?.length..]
 
     # Step 5: Leading blanks are ignored
     cl = cl.trimLeft()
@@ -149,9 +157,7 @@ class Command
       [m, command, args] = cl.match(/^(\w+)(.*)/)
 
     # If the command matches an existing one exactly, execute that one
-    if (func = Ex.singleton()[command])?
-      func({ range, args, @vimState, @exState, @editor })
-    else
+    unless (func = Ex.singleton()[command])?
       # Step 8: Match command against existing commands
       matching = (name for name, val of Ex.singleton() when \
         name.indexOf(command) is 0)
@@ -161,9 +167,16 @@ class Command
       command = matching[0]
 
       func = Ex.singleton()[command]
-      if func?
-        func({ range, args, @vimState, @exState, @editor })
+
+    if func?
+      if runOverSelections
+        for id, selection of @selections
+          bufferRange = selection.getBufferRange()
+          range = [bufferRange.start.row, bufferRange.end.row]
+          func({ range, args, @vimState, @exState, @editor })
       else
-        throw new CommandError("Not an editor command: #{input.characters}")
+        func({ range, args, @vimState, @exState, @editor })
+    else
+      throw new CommandError("Not an editor command: #{input.characters}")
 
 module.exports = Command

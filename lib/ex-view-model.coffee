@@ -4,9 +4,12 @@ Ex = require './ex'
 
 module.exports =
 class ExViewModel extends ViewModel
-  constructor: (@exCommand) ->
+  constructor: (@exCommand, withSelection) ->
     super(@exCommand, class: 'command')
     @historyIndex = -1
+
+    if withSelection
+      @view.editorElement.getModel().setText("'<,'>")
 
     @view.editorElement.addEventListener('keydown', @tabAutocomplete)
     atom.commands.add(@view.editorElement, 'core:move-up', @increaseHistoryEx)

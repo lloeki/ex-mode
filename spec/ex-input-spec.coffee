@@ -70,6 +70,7 @@ describe "the input element", ->
     expect(getVisibility()).toBe true
     commandEditor = getCommandEditor()
     model = commandEditor.getModel()
+    expect(model.getText()).toBe ''
     model.setText('abc')
     atom.commands.dispatch(commandEditor, "core:backspace")
     expect(getVisibility()).toBe true
@@ -82,3 +83,11 @@ describe "the input element", ->
     expect(model.getText()).toBe ''
     atom.commands.dispatch(commandEditor, "core:backspace")
     expect(getVisibility()).toBe false
+
+  it "contains '<,'> when opened while there are selections", ->
+    editor.setCursorBufferPosition([0, 0])
+    editor.selectToBufferPosition([0, 1])
+    editor.addCursorAtBufferPosition([2, 0])
+    editor.selectToBufferPosition([2, 1])
+    atom.commands.dispatch(editorElement, "ex-mode:open")
+    expect(getCommandEditor().getModel().getText()).toBe "'<,'>"

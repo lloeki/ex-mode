@@ -36,7 +36,8 @@ describe "the commands", ->
 
       helpers.getEditorElement (element) ->
         atom.commands.dispatch(element, "ex-mode:open")
-        keydown('escape')
+        atom.commands.dispatch(element.getModel().normalModeInputView.editorElement,
+                               "core:cancel")
         editorElement = element
         editor = editorElement.getModel()
         vimState = vimMode.mainModule.getEditorState(editor)
@@ -848,3 +849,25 @@ describe "the commands", ->
       WArgs = Ex.W.calls[0].args[0]
       writeArgs = Ex.write.calls[0].args[0]
       expect(WArgs).toBe writeArgs
+
+  describe "with selections", ->
+    it "executes on the selected range", ->
+      spyOn(Ex, 's')
+      editor.setCursorBufferPosition([0, 0])
+      editor.selectToBufferPosition([2, 1])
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      submitNormalModeInputText("'<,'>s/abc/def")
+      expect(Ex.s.calls[0].args[0].range).toEqual [0, 2]
+
+    it "calls the functions multiple times if there are multiple selections", ->
+      spyOn(Ex, 's')
+      editor.setCursorBufferPosition([0, 0])
+      editor.selectToBufferPosition([2, 1])
+      editor.addCursorAtBufferPosition([3, 0])
+      editor.selectToBufferPosition([3, 2])
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      submitNormalModeInputText("'<,'>s/abc/def")
+      calls = Ex.s.calls
+      expect(calls.length).toEqual 2
+      expect(calls[0].args[0].range).toEqual [0, 2]
+      expect(calls[1].args[0].range).toEqual [3, 3]
