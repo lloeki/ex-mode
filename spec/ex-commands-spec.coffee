@@ -118,9 +118,10 @@ describe "the commands", ->
       submitNormalModeInputText '/def'
       expect(editor.getCursorBufferPosition()).toEqual [1, 0]
 
+      editor.setCursorBufferPosition([2, 0])
       openEx()
-      submitNormalModeInputText '?abc'
-      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+      submitNormalModeInputText '?def'
+      expect(editor.getCursorBufferPosition()).toEqual [1, 0]
 
       editor.setCursorBufferPosition([3, 0])
       openEx()
