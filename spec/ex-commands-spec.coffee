@@ -107,7 +107,7 @@ describe "the commands", ->
     it "moves to a mark's line", ->
       keydown('l')
       keydown('m')
-      commandModeInputKeydown 'a'
+      normalModeInputKeydown 'a'
       keydown('j')
       openEx()
       submitNormalModeInputText "'a"
@@ -637,7 +637,6 @@ describe "the commands", ->
       waitsFor -> processedOpStack
       editor.setText('abc\ndef\nghi\njkl')
       editor.setCursorBufferPosition([1, 1])
-      # For some reason, keydown(':') doesn't work here :/
       atom.commands.dispatch(editorElement, 'ex-mode:open')
       submitNormalModeInputText(',/k/delete')
       expect(editor.getText()).toEqual('abc\n')
