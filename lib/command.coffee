@@ -8,14 +8,15 @@ class Command
     @selections = @exState.getSelections()
     @viewModel = new ExViewModel(@, Object.keys(@selections).length > 0)
 
-  parseAddr: (str, curPos) ->
+  parseAddr: (str, cursor) ->
+    row = cursor.getBufferRow()
     if str is '.'
-      addr = curPos.row
+      addr = row
     else if str is '$'
       # Lines are 0-indexed in Atom, but 1-indexed in vim.
       addr = @editor.getBuffer().lines.length - 1
     else if str[0] in ["+", "-"]
-      addr = curPos.row + @parseOffset(str)
+      addr = row + @parseOffset(str)
     else if not isNaN(str)
       addr = parseInt(str) - 1
     else if str[0] is "'" # Parse Mark...
@@ -26,13 +27,21 @@ class Command
         throw new CommandError("Mark #{str} not set.")
       addr = mark.getEndBufferPosition().row
     else if str[0] is "/"
-      addr = Find.findNextInBuffer(@editor.buffer, curPos, str[1...-1])
+      str = str[1...]
+      if str[str.length-1] is "/"
+        str = str[...-1]
+      addr = Find.scanEditor(str, @editor, cursor.getCurrentLineBufferRange().end)[0]
       unless addr?
-        throw new CommandError("Pattern not found: #{str[1...-1]}")
+        throw new CommandError("Pattern not found: #{str}")
+      addr = addr.start.row
     else if str[0] is "?"
-      addr = Find.findPreviousInBuffer(@editor.buffer, curPos, str[1...-1])
+      str = str[1...]
+      if str[str.length-1] is "?"
+        str = str[...-1]
+      addr = Find.scanEditor(str, @editor, cursor.getCurrentLineBufferRange().start, true)[0]
       unless addr?
         throw new CommandError("Pattern not found: #{str[1...-1]}")
+      addr = addr.start.row
 
     return addr
 
@@ -76,8 +85,8 @@ class Command
         \$|                               # Last line
         \d+|                              # n-th line
         '[\[\]<>'`"^.(){}a-zA-Z]|         # Marks
-        /.*?[^\\]/|                       # Regex
-        \?.*?[^\\]\?|                     # Backwards search
+        /.*?(?:[^\\]/|$)|                 # Regex
+        \?.*?(?:[^\\]\?|$)|               # Backwards search
         [+-]\d*                           # Current line +/- a number of lines
         )((?:\s*[+-]\d*)*)                # Line offset
         )?
@@ -96,7 +105,7 @@ class Command
 
       [match, addr1, off1, addr2, off2] = cl.match(addrPattern)
 
-      curPos = @editor.getCursorBufferPosition()
+      cursor = @editor.getLastCursor()
 
       # Special case: run command on selection. This can't be handled by simply
       # parsing the mark since vim-mode doesn't set it (and it would be fairly
@@ -106,10 +115,10 @@ class Command
       else
         runOverSelections = false
         if addr1?
-          address1 = @parseAddr(addr1, curPos)
+          address1 = @parseAddr(addr1, cursor)
         else
           # If no addr1 is given (,+3), assume it is '.'
-          address1 = curPos.row
+          address1 = cursor.getBufferRow()
         if off1?
           address1 += @parseOffset(off1)
 
@@ -119,7 +128,7 @@ class Command
           throw new CommandError('Invalid range')
 
         if addr2?
-          address2 = @parseAddr(addr2, curPos)
+          address2 = @parseAddr(addr2, cursor)
         if off2?
           address2 += @parseOffset(off2)
 
