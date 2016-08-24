@@ -10,6 +10,7 @@ describe "autocomplete functionality", ->
   beforeEach ->
     @autoComplete = new AutoComplete(['taba', 'tabb', 'tabc'])
     @testDir = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
+    @nonExistentTestDir = path.join(os.tmpdir(), "atom-ex-mode-spec-#{uuid.v4()}")
     @testFile1 = path.join(@testDir, "atom-ex-testfile-a.txt")
     @testFile2 = path.join(@testDir, "atom-ex-testfile-b.txt")
 
@@ -80,3 +81,20 @@ describe "autocomplete functionality", ->
 
     it "lists files once", ->
       expect(@autoComplete.getFilePathCompletion.callCount).toBe(1)
+
+  describe "autocomplete non existent directory", ->
+    beforeEach ->
+      @completed = @autoComplete.getAutocomplete('tabe ' + @nonExistentTestDir)
+
+    it "returns no completions", ->
+      expected = '';
+      expect(@completed).toEqual(expected)
+
+  describe "autocomplete existing file as directory", ->
+    beforeEach ->
+      filePath = @testFile1 + path.sep
+      @completed = @autoComplete.getAutocomplete('tabe ' + filePath)
+
+    it "returns no completions", ->
+      expected = '';
+      expect(@completed).toEqual(expected)

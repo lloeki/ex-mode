@@ -40,6 +40,7 @@ class AutoComplete
     if @completions.length == 0
       @completions = completeFunc()
 
+    complete = ''
     if @completions.length
       complete = @completions[@autoCompleteIndex % @completions.length]
       @autoCompleteIndex++
@@ -48,7 +49,7 @@ class AutoComplete
       if complete.endsWith('/') && @completions.length == 1
         @resetCompletion()
 
-      return complete
+    return complete
 
   getCommandCompletion: (command) ->
     return @filterByPrefix(@commands, command)
@@ -63,12 +64,17 @@ class AutoComplete
         basePath = path.dirname(filePath)
         baseName = path.basename(filePath)
 
-      files = fs.readdirSync(basePath)
-
-      return @filterByPrefix(files, baseName).map((f) =>
-        filePath = path.join(basePath, f)
-        if fs.lstatSync(filePath).isDirectory()
-          return command + ' ' + filePath  + path.sep
-        else
-          return command + ' ' + filePath
-      )
+      try
+        basePathStat = fs.statSync(basePath)
+        if basePathStat.isDirectory()
+          files = fs.readdirSync(basePath)
+          return @filterByPrefix(files, baseName).map((f) =>
+            filePath = path.join(basePath, f)
+            if fs.lstatSync(filePath).isDirectory()
+              return command + ' ' + filePath  + path.sep
+            else
+              return command + ' ' + filePath
+          )
+        return []
+      catch err
+        return []
