@@ -123,8 +123,9 @@ class Command
           address1 += @parseOffset(off1)
 
         address1 = 0 if address1 is -1
+        address1 = lastLine if address1 > lastLine
 
-        if address1 < 0 or address1 > lastLine
+        if address1 < 0
           throw new CommandError('Invalid range')
 
         if addr2?
@@ -132,7 +133,10 @@ class Command
         if off2?
           address2 += @parseOffset(off2)
 
-        if address2 < 0 or address2 > lastLine
+        address2 = 0 if address2 is -1
+        address2 = lastLine if address2 > lastLine
+
+        if address2 < 0
           throw new CommandError('Invalid range')
 
         if address2 < address1
