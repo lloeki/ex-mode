@@ -90,6 +90,33 @@ describe "the commands", ->
       submitNormalModeInputText '-2'
       expect(editor.getCursorBufferPosition()).toEqual [0, 0]
 
+    it "limits to the last line", ->
+      openEx()
+      submitNormalModeInputText '10'
+      expect(editor.getCursorBufferPosition()).toEqual [3, 0]
+      editor.setCursorBufferPosition([0, 0])
+
+      openEx()
+      submitNormalModeInputText '3,10'
+      expect(editor.getCursorBufferPosition()).toEqual [3, 0]
+      editor.setCursorBufferPosition([0, 0])
+
+      openEx()
+      submitNormalModeInputText '$+1000'
+      expect(editor.getCursorBufferPosition()).toEqual [3, 0]
+      editor.setCursorBufferPosition([0, 0])
+
+    it "goes to the first line with address 0", ->
+      editor.setCursorBufferPosition([2, 0])
+      openEx()
+      submitNormalModeInputText '0'
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
+      editor.setCursorBufferPosition([2, 0])
+      openEx()
+      submitNormalModeInputText '0,0'
+      expect(editor.getCursorBufferPosition()).toEqual [0, 0]
+
     it "doesn't move when the address is the current line", ->
       openEx()
       submitNormalModeInputText '.'
