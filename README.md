@@ -4,7 +4,9 @@ ex-mode for Atom's vim-mode
 
 ## Use
 
-Install both [vim-mode](https://github.com/atom/vim-mode) and ex-mode. Type `:` in command mode. Enter `w` or `write`.
+Install both [vim-mode-plus](https://github.com/t9md/atom-vim-mode-plus) (or
+the deprecated `vim-mode`) and ex-mode. Type `:` in command mode. Enter `w` or
+`write`.
 
 ## Extend
 
