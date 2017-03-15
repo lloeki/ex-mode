@@ -23,6 +23,11 @@
       "versions": {
         "^0.1.0": "consumeVim"
       }
+    },
+    "vim-mode-plus": {
+      "versions": {
+        "^0.1.0": "consumeVim"
+      }
     }
   },
   "providedServices": {
