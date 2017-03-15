@@ -485,6 +485,13 @@ describe "the commands", ->
       submitNormalModeInputText('xit')
       expect(Ex.wq).toHaveBeenCalled()
 
+  describe ":x", ->
+    it "acts as an alias to :xit", ->
+      spyOn(Ex, 'xit')
+      openEx()
+      submitNormalModeInputText('x')
+      expect(Ex.xit).toHaveBeenCalled()
+
   describe ":wqall", ->
     it "calls :wall, then :quitall", ->
       spyOn(Ex, 'wall')
