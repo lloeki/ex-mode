@@ -1,3 +1,11 @@
+## 0.14.0
+* Support `:tabonly` (@jmarianer)
+* Fix `:x` closing Atom instead of the current pane
+
+## 0.13.1
+* Limit addresses to the last line
+* Fix autocompleting a non existent directory (@mcnicholls)
+
 ## 0.13.0
 * Added basic support for visual marks (e.g. `:'<,'>s/foo/bar`)
 * Added `smartcase` option to `:set`
