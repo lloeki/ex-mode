@@ -21,12 +21,12 @@
   "consumedServices": {
     "vim-mode": {
       "versions": {
-        "^0.1.0": "_consumeVim"
+        "^0.1.0": "consumeVim"
       }
     },
     "vim-mode-plus": {
       "versions": {
-        "^0.1.0": "consumeVim"
+        "^0.1.0": "consumeVimModePlus"
       }
     }
   },

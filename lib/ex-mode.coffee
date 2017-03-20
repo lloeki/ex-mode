@@ -36,6 +36,9 @@ module.exports = ExMode =
     @vim = vim
     @globalExState.setVim(vim)
 
+  consumeVimModePlus: (vim) ->
+    this.consumeVim(vim)
+
   config:
     splitbelow:
       title: 'Split below'
