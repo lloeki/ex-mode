@@ -335,12 +335,23 @@ class Ex
 
     [pattern, substition, flags] = parsed
     if pattern is ''
-      pattern = vimState.getSearchHistoryItem()
+      if vimState.getSearchHistoryItem?
+        # vim-mode
+        pattern = vimState.getSearchHistoryItem()
+      else if vimState.searchHistory?
+        #vim-mode-plus
+        pattern = vimState.searchHistory.get('prev')
+
       if not pattern?
         atom.beep()
         throw new CommandError('No previous regular expression')
     else
-      vimState.pushSearchHistory(pattern)
+      if vimState.pushSearchHistory?
+        # vim-mode
+        vimState.pushSearchHistory(pattern)
+      else if vimState.searchHistory?
+        #vim-mode-plus
+        vimState.searchHistory.save(pattern)
 
     try
       flagsObj = {}
