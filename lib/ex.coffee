@@ -339,7 +339,7 @@ class Ex
         # vim-mode
         pattern = vimState.getSearchHistoryItem()
       else if vimState.searchHistory?
-        #vim-mode-plus
+        # vim-mode-plus
         pattern = vimState.searchHistory.get('prev')
 
       if not pattern?
@@ -350,7 +350,7 @@ class Ex
         # vim-mode
         vimState.pushSearchHistory(pattern)
       else if vimState.searchHistory?
-        #vim-mode-plus
+        # vim-mode-plus
         vimState.searchHistory.save(pattern)
 
     try
