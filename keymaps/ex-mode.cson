@@ -7,5 +7,7 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
+'atom-text-editor.vim-mode-plus:not(.insert-mode)':
+  ':': 'ex-mode:open'
 'atom-text-editor.vim-mode:not(.insert-mode)':
   ':': 'ex-mode:open'
