@@ -2,7 +2,7 @@ helpers = require './spec-helper'
 describe "the input element", ->
   [editor, editorElement, vimState, exState] = []
   beforeEach ->
-    vimMode = atom.packages.loadPackage('vim-mode')
+    vimMode = atom.packages.loadPackage('vim-mode-plus')
     exMode = atom.packages.loadPackage('ex-mode')
     waitsForPromise ->
       activationPromise = exMode.activate()
@@ -26,7 +26,6 @@ describe "the input element", ->
         atom.commands.dispatch(getCommandEditor(), "core:cancel")
         vimState = vimMode.mainModule.getEditorState(editor)
         exState = exMode.mainModule.exStates.get(editor)
-        vimState.activateNormalMode()
         vimState.resetNormalMode()
         editor.setText("abc\ndef\nabc\ndef")
 

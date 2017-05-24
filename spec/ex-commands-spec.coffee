@@ -11,7 +11,7 @@ describe "the commands", ->
   [editor, editorElement, vimState, exState, dir, dir2] = []
   projectPath = (fileName) -> path.join(dir, fileName)
   beforeEach ->
-    vimMode = atom.packages.loadPackage('vim-mode')
+    vimMode = atom.packages.loadPackage('vim-mode-plus')
     exMode = atom.packages.loadPackage('ex-mode')
     waitsForPromise ->
       activationPromise = exMode.activate()
@@ -42,7 +42,6 @@ describe "the commands", ->
         editor = editorElement.getModel()
         vimState = vimMode.mainModule.getEditorState(editor)
         exState = exMode.mainModule.exStates.get(editor)
-        vimState.activateNormalMode()
         vimState.resetNormalMode()
         editor.setText("abc\ndef\nabc\ndef")
 

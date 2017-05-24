@@ -22,7 +22,7 @@ class Command
     else if str[0] is "'" # Parse Mark...
       unless @vimState?
         throw new CommandError("Couldn't get access to vim-mode.")
-      mark = @vimState.marks[str[1]]
+      mark = @vimState.mark.marks[str[1]]
       unless mark?
         throw new CommandError("Mark #{str} not set.")
       addr = mark.getEndBufferPosition().row
