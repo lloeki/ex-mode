@@ -1,3 +1,10 @@
+## 0.15.0
+* `vim-mode-plus` support!
+  - Add keybinding (@jmarianer)
+  - Support `:substitute` command (@mkiken)
+  - Support marks
+  - Use `vim-mode-plus` in specs
+
 ## 0.14.0
 * Support `:tabonly` (@jmarianer)
 * Fix `:x` closing Atom instead of the current pane
