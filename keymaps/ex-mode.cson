@@ -11,3 +11,6 @@
   ':': 'ex-mode:open'
 'atom-text-editor.vim-mode:not(.insert-mode)':
   ':': 'ex-mode:open'
+
+'atom-text-editor.vim-mode-plus.normal-mode':
+  ':': 'ex-mode:open'
