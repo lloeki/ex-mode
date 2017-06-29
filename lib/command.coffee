@@ -14,7 +14,11 @@ class Command
       addr = row
     else if str is '$'
       # Lines are 0-indexed in Atom, but 1-indexed in vim.
-      addr = @editor.getBuffer().lines.length - 1
+      # The two ways of getting length let us support Atom 1.19's new buffer
+      # implementation (https://github.com/atom/atom/pull/14435) and still
+      # support 1.18 and below
+      buffer = @editor.getBuffer()
+      addr = (buffer.getLineCount?() ? buffer.lines.length) - 1
     else if str[0] in ["+", "-"]
       addr = row + @parseOffset(str)
     else if not isNaN(str)
@@ -73,7 +77,9 @@ class Command
       return
 
     # Step 4: Address parsing
-    lastLine = @editor.getBuffer().lines.length - 1
+    # see comment in parseAddr about line length
+    buffer = @editor.getBuffer()
+    lastLine = (buffer.getLineCount?() ? buffer.lines.length) - 1
     if cl[0] is '%'
       range = [0, lastLine]
       cl = cl[1..]
