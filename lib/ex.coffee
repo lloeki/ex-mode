@@ -372,7 +372,7 @@ class Ex
         # https://atom.io/docs/api/v1.18.0/TextEditor#instance-backwardsScanInBufferRange
         editor.backwardsScanInBufferRange(
           patternRE,
-          [[line, 0], [line + 1, 0]],
+          [[line, 0], [line - 1, 0]],
           ({match, replace}) ->
             replace(replaceGroups(match[..], substition))
         )
