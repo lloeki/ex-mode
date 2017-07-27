@@ -1,6 +1,6 @@
 ## 0.16.0
 
-* Support for Atom 1.18 and 1.19 (#184)
+* Support for Atom 1.18 and 1.19 ([#184](https://github.com/lloeki/ex-mode/pull/184))
 
 ## 0.15.0
 * `vim-mode-plus` support!
