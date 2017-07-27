@@ -17,8 +17,13 @@ trySave = (func) ->
   deferred = defer()
 
   try
-    func()
-    deferred.resolve()
+    response = func()
+    
+    if response instanceof Promise
+        response.then ->
+            deferred.resolve()
+    else
+        deferred.resolve()
   catch error
     if error.message.endsWith('is a directory')
       atom.notifications.addWarning("Unable to save file: #{error.message}")
@@ -252,7 +257,7 @@ class Ex
     @write(args)
 
   wq: (args) =>
-    @write(args).then => @quit()
+    @write(args).then(=> @quit())
 
   wa: =>
     @wall()
