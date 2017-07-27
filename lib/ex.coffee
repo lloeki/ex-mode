@@ -367,7 +367,10 @@ class Ex
 
     editor.transact ->
       for line in [range[0]..range[1]]
-        editor.scanInBufferRange(
+        # Following some simple testing and reading the atom docs
+        # calling backwardsScanInBufferRange is a better solution.
+        # https://atom.io/docs/api/v1.18.0/TextEditor#instance-backwardsScanInBufferRange
+        editor.backwardsScanInBufferRange(
           patternRE,
           [[line, 0], [line + 1, 0]],
           ({match, replace}) ->
