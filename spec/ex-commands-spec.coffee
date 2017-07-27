@@ -764,12 +764,12 @@ describe "the commands", ->
 
       test = (escapeChar, escaped) ->
         openEx()
-        submitNormalModeInputText(":substitute/,/\\#{escapeChar}/g")
+        submitNormalModeInputText(":substitute/,/#{escapeChar}/g")
         expect(editor.getText()).toEqual("abc#{escaped}def#{escaped}ghi")
 
-      it "replaces with a tab", -> test('t', '\t')
-      it "replaces with a linefeed", -> test('n', '\n')
-      it "replaces with a carriage return", -> test('r', '\r')
+      it "replaces with a tab", -> test('\\t', '\t')
+      it "replaces with a linefeed", -> test('\\n', '\n')
+      it "replaces with a carriage return", -> test('\\r', '\r')
 
     describe "case sensitivity", ->
       describe "respects the smartcase setting", ->
