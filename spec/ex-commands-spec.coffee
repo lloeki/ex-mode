@@ -764,7 +764,7 @@ describe "the commands", ->
 
       test = (escapeChar, escaped) ->
         openEx()
-        submitNormalModeInputText(":substitute/,/\#{escapeChar}/g")
+        submitNormalModeInputText(":substitute/,/\\#{escapeChar}/g")
         expect(editor.getText()).toEqual("abc#{escaped}def#{escaped}ghi")
 
       it "replaces with a tab", -> test('t', '\t')
