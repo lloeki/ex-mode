@@ -1,3 +1,7 @@
+## 0.17.0 (Unreleased)
+
+* Added support for canceling ex-mode with Ctrl-C ([#186](https://github.com/lloeki/ex-mode/pull/186))
+
 ## 0.16.0
 
 * Support for Atom 1.18 and 1.19 ([#184](https://github.com/lloeki/ex-mode/pull/184))
