@@ -15,7 +15,8 @@ class ExCommandModeInputElement extends HTMLDivElement
       @editorContainer.style.height = "0px"
 
     @editorElement = document.createElement "atom-text-editor"
-    @editorElement.classList.add('editor')
+    @editorElement.classList.add('editor') # Consider this deprecated!
+    @editorElement.classList.add('ex-mode-editor')
     @editorElement.getModel().setMini(true)
     @editorElement.setAttribute('mini', '')
     @editorContainer.appendChild(@editorElement)
@@ -40,6 +41,7 @@ class ExCommandModeInputElement extends HTMLDivElement
 
     atom.commands.add(@editorElement, 'core:confirm', @confirm.bind(this))
     atom.commands.add(@editorElement, 'core:cancel', @cancel.bind(this))
+    atom.commands.add(@editorElement, 'ex-mode:close', @cancel.bind(this))
     atom.commands.add(@editorElement, 'blur', @cancel.bind(this))
 
   backspace: ->

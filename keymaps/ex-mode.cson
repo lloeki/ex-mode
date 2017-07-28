@@ -9,5 +9,7 @@
 # https://atom.io/docs/latest/advanced/keymaps
 'atom-text-editor.vim-mode-plus:not(.insert-mode)':
   ':': 'ex-mode:open'
+'atom-text-editor.ex-mode-editor':
+  'ctrl-c': 'ex-mode:close'
 'atom-text-editor.vim-mode:not(.insert-mode)':
   ':': 'ex-mode:open'
