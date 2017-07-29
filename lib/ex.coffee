@@ -20,10 +20,10 @@ trySave = (func) ->
     response = func()
     
     if response instanceof Promise
-        response.then ->
-            deferred.resolve()
-    else
+      response.then ->
         deferred.resolve()
+    else
+      deferred.resolve()
   catch error
     if error.message.endsWith('is a directory')
       atom.notifications.addWarning("Unable to save file: #{error.message}")
