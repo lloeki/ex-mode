@@ -133,7 +133,6 @@ class Ex
 
   qall: => @quitall()
 
-
   tabedit: (args) =>
     if args.args.trim() isnt ''
       @edit(args)
