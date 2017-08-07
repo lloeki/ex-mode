@@ -438,10 +438,19 @@ class Ex
           optionProcessor()
 
   sort: ({ range }) =>
-    range = [[range[0], 0], [range[1] + 1, 0]]
     editor = atom.workspace.getActiveTextEditor()
-    text = editor.getTextInBufferRange(range)
-    sortedText = _.sortBy(text.split(/\n/)).join('\n')
-    editor.buffer.setTextInRange(range, sortedText)
+    sortingRange = [[]]
+    isMultiLine = range[1] - range[0] > 1
+    if isMultiLine
+      sortingRange = [[range[0], 0], [range[1] + 1, 0]]
+    else
+      sortingRange = [[0, 0], [editor.getLastBufferRow(), 0]]
+
+    textLines = []
+    for lineIndex in [sortingRange[0][0]..sortingRange[1][0] - 1]
+      textLines.push(editor.lineTextForBufferRow(lineIndex))
+
+    sortedText = _.sortBy(textLines).join('\n') + '\n'
+    editor.buffer.setTextInRange(sortingRange, sortedText)
 
 module.exports = Ex
