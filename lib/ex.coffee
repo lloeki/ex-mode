@@ -133,6 +133,7 @@ class Ex
 
   qall: => @quitall()
 
+
   tabedit: (args) =>
     if args.args.trim() isnt ''
       @edit(args)
@@ -436,5 +437,12 @@ class Ex
           if not optionProcessor?
             throw new CommandError("No such option: #{option}")
           optionProcessor()
+
+  sort: ({ range }) =>
+    range = [[range[0], 0], [range[1] + 1, 0]]
+    editor = atom.workspace.getActiveTextEditor()
+    text = editor.getTextInBufferRange(range)
+    sortedText = _.sortBy(text.split(/\n/)).join('\n')
+    editor.buffer.setTextInRange(range, sortedText)
 
 module.exports = Ex
