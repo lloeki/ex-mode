@@ -1,3 +1,7 @@
+## (unpublished)
+
+* Add :sort command ([#190](https://github.com/lloeki/ex-mode/pull/190))
+
 ## 0.17.0
 
 * Add support for Atom 1.19 ([#185](https://github.com/lloeki/ex-mode/pull/185))
