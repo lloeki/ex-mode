@@ -440,16 +440,20 @@ class Ex
   sort: ({ range }) =>
     editor = atom.workspace.getActiveTextEditor()
     sortingRange = [[]]
+
+    # If no range is provided, the entire file should be sorted.
     isMultiLine = range[1] - range[0] > 1
     if isMultiLine
       sortingRange = [[range[0], 0], [range[1] + 1, 0]]
     else
       sortingRange = [[0, 0], [editor.getLastBufferRow(), 0]]
 
+    # Store every bufferedRow string in an array.
     textLines = []
     for lineIndex in [sortingRange[0][0]..sortingRange[1][0] - 1]
       textLines.push(editor.lineTextForBufferRow(lineIndex))
 
+    # Sort the array and join them together with newlines for writing back to the file.
     sortedText = _.sortBy(textLines).join('\n') + '\n'
     editor.buffer.setTextInRange(sortingRange, sortedText)
 
