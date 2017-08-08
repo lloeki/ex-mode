@@ -983,3 +983,18 @@ describe "the commands", ->
       expect(calls.length).toEqual 2
       expect(calls[0].args[0].range).toEqual [0, 2]
       expect(calls[1].args[0].range).toEqual [3, 3]
+
+  describe ':sort', ->
+    beforeEach ->
+      editor.setText('ghi\nabc\njkl\ndef\n142\nzzz\n91xfds9\n')
+      editor.setCursorBufferPosition([0, 0])
+
+    it "sorts entire file if range is not multi-line", ->
+      openEx()
+      submitNormalModeInputText('sort')
+      expect(editor.getText()).toEqual('142\n91xfds9\nabc\ndef\nghi\njkl\nzzz\n')
+
+    it "sorts specific range if range is multi-line", ->
+      openEx()
+      submitNormalModeInputText('2,4sort')
+      expect(editor.getText()).toEqual('ghi\nabc\ndef\njkl\n142\nzzz\n91xfds9\n')
