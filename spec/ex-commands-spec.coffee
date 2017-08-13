@@ -944,6 +944,14 @@ describe "the commands", ->
         submitNormalModeInputText(':set nosmartcase')
         expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(false)
 
+      it "sets (no)gdefault", ->
+        openEx()
+        submitNormalModeInputText(':set gdefault')
+        expect(atom.config.get('ex-mode.gdefault')).toBe(true)
+        atom.commands.dispatch(editorElement, 'ex-mode:open')
+        submitNormalModeInputText(':set nogdefault')
+        expect(atom.config.get('ex-mode.gdefault')).toBe(false)
+
   describe "aliases", ->
     it "calls the aliased function without arguments", ->
       ExClass.registerAlias('W', 'w')
