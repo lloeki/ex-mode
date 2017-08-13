@@ -18,7 +18,7 @@ trySave = (func) ->
 
   try
     response = func()
-    
+
     if response instanceof Promise
       response.then ->
         deferred.resolve()
@@ -361,6 +361,9 @@ class Ex
     try
       flagsObj = {}
       flags.split('').forEach((flag) -> flagsObj[flag] = true)
+      # gdefault option
+      if atom.config.get('ex-mode.gdefault')
+        flagsObj.g = !flagsObj.g
       patternRE = getSearchTerm(pattern, flagsObj)
     catch e
       if e.message.indexOf('Invalid flags supplied to RegExp constructor') is 0
