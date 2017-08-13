@@ -715,6 +715,12 @@ describe "the commands", ->
       submitNormalModeInputText(':%substitute/abc/ghi/ig')
       expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nghiaghi')
 
+    it "set gdefault option", ->
+      openEx()
+      atom.config.set('ex-mode.gdefault', true)
+      submitNormalModeInputText(':substitute/a/x/g')
+      expect(editor.getText()).toEqual('xbcaABC\ndefdDEF\nabcaABC')
+
     describe ":yank", ->
       beforeEach ->
         editor.setText('abc\ndef\nghi\njkl')
