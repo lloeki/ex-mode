@@ -718,6 +718,11 @@ describe "the commands", ->
     it "set gdefault option", ->
       openEx()
       atom.config.set('ex-mode.gdefault', true)
+      submitNormalModeInputText(':substitute/a/x')
+      expect(editor.getText()).toEqual('xbcxABC\ndefdDEF\nabcaABC')
+
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      atom.config.set('ex-mode.gdefault', true)
       submitNormalModeInputText(':substitute/a/x/g')
       expect(editor.getText()).toEqual('xbcaABC\ndefdDEF\nabcaABC')
 
