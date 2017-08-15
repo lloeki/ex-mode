@@ -50,3 +50,8 @@ module.exports = ExMode =
       description: 'when splitting, split from right'
       type: 'boolean'
       default: 'false'
+    gdefault:
+      title: 'Gdefault'
+      description: 'When on, the ":substitute" flag \'g\' is default on'
+      type: 'boolean'
+      default: 'false'

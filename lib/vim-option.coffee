@@ -56,4 +56,10 @@ class VimOption
   noscs: =>
     @nosmartcase()
 
+  gdefault: =>
+    atom.config.set("ex-mode.gdefault", true)
+
+  nogdefault: =>
+    atom.config.set("ex-mode.gdefault", false)
+
 module.exports = VimOption

@@ -715,6 +715,17 @@ describe "the commands", ->
       submitNormalModeInputText(':%substitute/abc/ghi/ig')
       expect(editor.getText()).toEqual('ghiaghi\ndefdDEF\nghiaghi')
 
+    it "set gdefault option", ->
+      openEx()
+      atom.config.set('ex-mode.gdefault', true)
+      submitNormalModeInputText(':substitute/a/x')
+      expect(editor.getText()).toEqual('xbcxABC\ndefdDEF\nabcaABC')
+
+      atom.commands.dispatch(editorElement, 'ex-mode:open')
+      atom.config.set('ex-mode.gdefault', true)
+      submitNormalModeInputText(':substitute/a/x/g')
+      expect(editor.getText()).toEqual('xbcaABC\ndefdDEF\nabcaABC')
+
     describe ":yank", ->
       beforeEach ->
         editor.setText('abc\ndef\nghi\njkl')
@@ -943,6 +954,14 @@ describe "the commands", ->
         openEx()
         submitNormalModeInputText(':set nosmartcase')
         expect(atom.config.get('vim-mode.useSmartcaseForSearch')).toBe(false)
+
+      it "sets (no)gdefault", ->
+        openEx()
+        submitNormalModeInputText(':set gdefault')
+        expect(atom.config.get('ex-mode.gdefault')).toBe(true)
+        atom.commands.dispatch(editorElement, 'ex-mode:open')
+        submitNormalModeInputText(':set nogdefault')
+        expect(atom.config.get('ex-mode.gdefault')).toBe(false)
 
   describe "aliases", ->
     it "calls the aliased function without arguments", ->
