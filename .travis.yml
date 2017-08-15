@@ -1,4 +1,4 @@
-## Project specific config ###
+### Project specific config ###
 language: generic
 
 env:
@@ -12,8 +12,7 @@ env:
 
 os:
   - linux
-
-dist: trusty
+  - osx
 
 ### Generic setup follows ###
 script:
@@ -35,11 +34,12 @@ git:
 
 sudo: false
 
+dist: trusty
+
 addons:
   apt:
     packages:
     - build-essential
-    - git
-    - libgnome-keyring-dev
-    - libsecret-1-dev
     - fakeroot
+    - git
+    - libsecret-1-dev
