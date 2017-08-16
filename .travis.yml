@@ -4,7 +4,7 @@ language: objective-c
 env:
   global:
     - APM_TEST_PACKAGES="vim-mode-plus"
-    - ATOM_LINT_WITH_BUNDLED_NODE="false"
+    - ATOM_LINT_WITH_BUNDLED_NODE="true"
 
   matrix:
     - ATOM_CHANNEL=stable
@@ -14,7 +14,10 @@ os:
   - linux
 
 ### Generic setup follows ###
-script: 'curl -s -O https://raw.githubusercontent.com/atom/ci/master/build-package.sh | sh'
+script:
+  - curl -s -O https://raw.githubusercontent.com/atom/ci/master/build-package.sh
+  - chmod +x build-package.sh
+  - ./build-package.sh
 
 notifications:
   email:
