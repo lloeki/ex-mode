@@ -1,5 +1,5 @@
 ### Project specific config ###
-language: objective-c
+language: generic
 
 env:
   global:
@@ -23,6 +23,8 @@ notifications:
   email:
     on_success: never
     on_failure: change
+
+dist: xenial
 
 git:
   depth: 10
