@@ -1,38 +1,11 @@
-### Project specific config ###
-language: generic
-
-env:
-  global:
-    - APM_TEST_PACKAGES="vim-mode-plus"
-    - ATOM_LINT_WITH_BUNDLED_NODE="true"
-
-  matrix:
-    - ATOM_CHANNEL=stable
-    - ATOM_CHANNEL=beta
-
-os:
-  - linux
-
-### Generic setup follows ###
-script:
-  - curl -s -O https://raw.githubusercontent.com/atom/ci/master/build-package.sh
-  - chmod +x build-package.sh
-  - ./build-package.sh
+language: objective-c
 
 notifications:
   email:
     on_success: never
     on_failure: change
 
-dist: xenial
+script: 'curl -s https://raw.githubusercontent.com/atom/ci/master/build-package.sh | sh'
 
 git:
   depth: 10
-
-addons:
-  apt:
-    packages:
-    - build-essential
-    - fakeroot
-    - git
-    - libsecret-1-dev
