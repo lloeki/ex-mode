@@ -1,5 +1,7 @@
 ## (unpublished)
 
+## 0.18.0
+
 * Add Gdefault support ([#191](https://github.com/lloeki/ex-mode/pull/191))
 * Add :sort command ([#190](https://github.com/lloeki/ex-mode/pull/190))
 
