@@ -11,5 +11,6 @@
   ':': 'ex-mode:open'
 'atom-text-editor.ex-mode-editor':
   'ctrl-c': 'ex-mode:close'
+  'ctrl-[': 'ex-mode:close'
 'atom-text-editor.vim-mode:not(.insert-mode)':
   ':': 'ex-mode:open'
