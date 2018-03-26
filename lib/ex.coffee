@@ -132,7 +132,11 @@ class Ex
     atom.workspace.getActivePane().destroyActiveItem()
 
   quitall: ->
-    atom.close()
+    if !atom.config.get('ex-mode.onlyCloseBuffers')
+      atom.close()
+    else
+      atom.workspace.getTextEditors().forEach (editor) ->
+        editor.destroy()
 
   q: => @quit()
 
