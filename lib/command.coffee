@@ -193,6 +193,8 @@ class Command
       if runOverSelections
         for id, selection of @selections
           bufferRange = selection.getBufferRange()
+          if @editor.getTextInBufferRange(bufferRange).endsWith('\n')
+            bufferRange.end.row--
           range = [bufferRange.start.row, bufferRange.end.row]
           func({ range, args, @vimState, @exState, @editor })
       else
