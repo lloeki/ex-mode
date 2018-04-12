@@ -128,11 +128,13 @@ class Command
         if off1?
           address1 += @parseOffset(off1)
 
-        address1 = 0 if address1 is -1
-        address1 = lastLine if address1 > lastLine
+        inputIsNumber = /^\d+$/.test(cl)
 
-        if address1 < 0
-          throw new CommandError('Invalid range')
+        address1 = 0 if address1 is -1
+        address1 = lastLine if address1 > lastLine and inputIsNumber
+
+        if address1 < 0 or address1 > lastLine
+          throw new CommandError('E16: Invalid range')
 
         if addr2?
           address2 = @parseAddr(addr2, cursor)
@@ -140,10 +142,10 @@ class Command
           address2 += @parseOffset(off2)
 
         address2 = 0 if address2 is -1
-        address2 = lastLine if address2 > lastLine
+        address2 = lastLine if address2 > lastLine and inputIsNumber
 
-        if address2 < 0
-          throw new CommandError('Invalid range')
+        if address2 < 0 or address2 > lastLine
+          throw new CommandError('E16: Invalid range')
 
         if address2 < address1
           throw new CommandError('Backwards range given')
