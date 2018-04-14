@@ -468,7 +468,7 @@ class Ex
   move: ({range, args, editor}) ->
     args = args.trimLeft()
     lastLine = editor.getLastScreenRow()
-    argsPattern = /[+-]\d+|\d+|[+-]/g
+    argsPattern = /^[$.]|[+-]\d+|\d+|[+-]/g
     args = args.match(argsPattern)
 
     if args?
@@ -476,6 +476,10 @@ class Ex
       address = if firstArgIsOffset then range[0] else 0
 
       for arg in args
+        if arg == '$'
+          address = lastLine
+        else if arg == '.'
+          address = editor.getCursorBufferPosition().row + 1
         else if arg == '+'
           address++
         else if arg == '-'
