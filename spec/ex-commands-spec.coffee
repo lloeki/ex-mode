@@ -1017,3 +1017,76 @@ describe "the commands", ->
       openEx()
       submitNormalModeInputText('2,4sort')
       expect(editor.getText()).toEqual('ghi\nabc\ndef\njkl\n142\nzzz\n91xfds9\n')
+
+  describe ":move", ->
+    beforeEach ->
+      editor.setText("1\n2\n3\n4\n5\n6\n7\n")
+      editor.setCursorBufferPosition([3, 0])
+
+    it "throws an error without any arguments", ->
+      openEx()
+      submitNormalModeInputText('move')
+      expect(atom.notifications.notifications[0].message)
+        .toEqual("Command error: E14: Invalid address")
+
+    it "throws an error when the address is outside the file's line boundary (inclusive)", ->
+      openEx()
+      submitNormalModeInputText("move 10")
+      expect(atom.notifications.notifications[0].message)
+      .toEqual("Command error: E14: Invalid address")
+
+    it "throws an error when the address is between the range (exclusive)", ->
+      openEx()
+      submitNormalModeInputText("2,4move 3")
+      expect(atom.notifications.notifications[0].message)
+      .toEqual("Command error: E134: Move lines into themselves")
+
+    it "throws an error when multiple selections are present", ->
+      openEx()
+      editor.setCursorBufferPosition([0, 0])
+      editor.selectToBufferPosition([0, 1])
+      editor.addCursorAtBufferPosition([1, 0])
+      editor.selectToBufferPosition([1, 1])
+      submitNormalModeInputText("move+")
+      expect(atom.notifications.notifications[0].message)
+      .toEqual("Command error: Multiple selections present")
+
+    it "moves all lines in the range to the specified address", ->
+      openEx()
+      submitNormalModeInputText("4,5move 6")
+      expect(editor.getText()).toEqual("1\n2\n3\n6\n4\n5\n7\n")
+
+    it "moves the line where the cursor is present if no range is given", ->
+      openEx()
+      submitNormalModeInputText("move 6")
+      expect(editor.getText()).toEqual("1\n2\n3\n5\n6\n4\n7\n")
+
+    it "takes offset arguments", ->
+      openEx()
+      submitNormalModeInputText("move+")
+      expect(editor.getText()).toEqual("1\n2\n3\n5\n4\n6\n7\n")
+
+    it "combines absolute address arguments with offsets", ->
+      openEx()
+      submitNormalModeInputText("move 6-4")
+      expect(editor.getText()).toEqual("1\n2\n4\n3\n5\n6\n7\n")
+
+    it "works with the special character $ as an argument",->
+      openEx()
+      submitNormalModeInputText("move $-2")
+      expect(editor.getText()).toEqual("1\n2\n3\n5\n4\n6\n7\n")
+
+    it "works with the special character . as an argument", ->
+      openEx()
+      submitNormalModeInputText("2,3move.")
+      expect(editor.getText()).toEqual("1\n4\n2\n3\n5\n6\n7\n")
+
+    it "puts the moved line down one row extra when moving it up in the editor",->
+      openEx()
+      submitNormalModeInputText("move-2")
+      expect(editor.getText()).toEqual("1\n2\n4\n3\n5\n6\n7\n")
+
+    it "puts the cursor at the address line", ->
+      openEx()
+      submitNormalModeInputText("move+")
+      expect(editor.getCursorBufferPosition()).toEqual [4, 0]
