@@ -475,6 +475,7 @@ class Ex
       firstArgIsOffset = /[+-]/.test(args[0])
       address = if firstArgIsOffset then range[0] else 0
 
+      # Caluculate address from args.
       for arg in args
         if arg == '$'
           address = lastLine
@@ -503,6 +504,7 @@ class Ex
     if address == range[0] or address == range[1]
       editor.setCursorBufferPosition([range[1], 0])
     else
+      # Batch move operations as a single undo/redo action.
       move = ->
         numOfLinesToMove = range[1] - range[0]
         bufferRange = [[range[0], 0], [range[1] + 1, 0]]
