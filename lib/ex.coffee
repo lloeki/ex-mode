@@ -465,4 +465,55 @@ class Ex
     sortedText = _.sortBy(textLines).join('\n') + '\n'
     editor.buffer.setTextInRange(sortingRange, sortedText)
 
+  move: ({range, args, editor}) ->
+    args = args.trimLeft()
+    lastLine = editor.getLastScreenRow()
+    argsPattern = /[+-]\d+|\d+|[+-]/g
+    args = args.match(argsPattern)
+
+    if args?
+      firstArgIsOffset = /[+-]/.test(args[0])
+      address = if firstArgIsOffset then range[0] else 0
+
+      for arg in args
+        else if arg == '+'
+          address++
+        else if arg == '-'
+          address--
+        else
+          address += parseInt(arg)
+
+    movingUp = address < range[0]
+    if movingUp
+      address++
+    if not firstArgIsOffset
+      address--
+
+    if isNaN(address) or address < 0 or address > lastLine
+      throw new CommandError("E14: Invalid address")
+    if address > range[0] and address < range[1]
+      throw new CommandError("E134: Move lines into themselves")
+    if editor.getSelections().length > 1
+      throw new CommandError("Multiple selections present")
+
+    if address == range[0] or address == range[1]
+      editor.setCursorBufferPosition([range[1], 0])
+    else
+      move = ->
+        numOfLinesToMove = range[1] - range[0]
+        bufferRange = [[range[0], 0], [range[1] + 1, 0]]
+        textToMove = editor.getTextInBufferRange(bufferRange)
+        editor.setTextInBufferRange(bufferRange, '')
+
+        if movingUp
+          editor.setTextInBufferRange([[address, 0], [address, 0]], textToMove)
+          editor.setCursorBufferPosition([address + numOfLinesToMove, 0])
+        else
+          editor.setTextInBufferRange([[address - numOfLinesToMove, 0],
+          [address - numOfLinesToMove, 0]], textToMove)
+          editor.setCursorBufferPosition([address, 0])
+      editor.transact(300, move)
+
+  m: (args) => @move(args)
+
 module.exports = Ex
