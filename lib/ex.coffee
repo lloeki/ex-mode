@@ -467,7 +467,7 @@ class Ex
 
   move: ({range, args, editor}) ->
     args = args.trimLeft()
-    lastLine = editor.getLastScreenRow()
+    lastLine = editor.getLastBufferRow()
     argsPattern = /^[$.]|[+-]\d+|\d+|[+-]/g
     args = args.match(argsPattern)
 
