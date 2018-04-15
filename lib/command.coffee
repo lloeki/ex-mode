@@ -128,10 +128,10 @@ class Command
         if off1?
           address1 += @parseOffset(off1)
 
-        inputIsNumber = /^\d+$/.test(cl)
+        commandProvided = /[$.\d+-]?[\,]?[$.\d+-]\w+$/g.test(cl)
 
         address1 = 0 if address1 is -1
-        address1 = lastLine if address1 > lastLine and inputIsNumber
+        address1 = lastLine if address1 > lastLine and commandProvided
 
         if address1 < 0 or address1 > lastLine
           throw new CommandError('E16: Invalid range')
@@ -142,7 +142,7 @@ class Command
           address2 += @parseOffset(off2)
 
         address2 = 0 if address2 is -1
-        address2 = lastLine if address2 > lastLine and inputIsNumber
+        address2 = lastLine if address2 > lastLine and commandProvided
 
         if address2 < 0 or address2 > lastLine
           throw new CommandError('E16: Invalid range')
