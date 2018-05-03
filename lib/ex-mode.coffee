@@ -55,3 +55,8 @@ module.exports = ExMode =
       description: 'When on, the ":substitute" flag \'g\' is default on'
       type: 'boolean'
       default: 'false'
+    onlyCloseBuffers:
+      title: 'Only close buffers'
+      description: 'When on, quitall only closes all buffers, not entire Atom instance'
+      type: 'boolean'
+      default: 'false'
