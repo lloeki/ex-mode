@@ -3,6 +3,7 @@ CommandError = require './command-error'
 fs = require 'fs-plus'
 VimOption = require './vim-option'
 _ = require 'underscore-plus'
+atom
 
 defer = () ->
   deferred = {}
@@ -210,9 +211,7 @@ class Ex
   e: (args) => @edit(args)
 
   enew: ->
-    buffer = atom.workspace.getActiveTextEditor().buffer
-    buffer.setPath(undefined)
-    buffer.load()
+    atom.workspace.open()
 
   write: ({ range, args, editor, saveas }) ->
     saveas ?= false
