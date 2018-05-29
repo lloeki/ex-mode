@@ -1,5 +1,7 @@
 ## (unpublished)
 
+* Fix `:enew` not working ([#215](https://github.com/lloeki/ex-mode/pull/215))
+
 ## 0.18.0
 
 * Add Gdefault support ([#191](https://github.com/lloeki/ex-mode/pull/191))
