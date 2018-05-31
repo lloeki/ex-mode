@@ -229,29 +229,30 @@ class Ex
     deferred = defer()
 
     editor = atom.workspace.getActiveTextEditor()
-    saved = false
+
+    # Case 1; path is provided
     if filePath.length isnt 0
-      fullPath = getFullPath(filePath)
-    if editor.getPath()? and (not fullPath? or editor.getPath() == fullPath)
-      if saveas
-        throw new CommandError("Argument required")
-      else
-        # Use editor.save when no path is given or the path to the file is given
-        trySave(-> editor.save()).then(deferred.resolve)
-        saved = true
-    else if not fullPath?
-      fullPath = atom.showSaveDialogSync()
+      fullPath = getFullPath filePath
 
-    if not saved and fullPath?
-      if not force and fs.existsSync(fullPath)
-        throw new CommandError("File exists (add ! to override)")
-      if saveas or editor.getFileName() == null
-        editor = atom.workspace.getActiveTextEditor()
-        trySave(-> editor.saveAs(fullPath, editor)).then(deferred.resolve)
-      else
-        trySave(-> saveAs(fullPath, editor)).then(deferred.resolve)
+      # Only write when it does not exist or we have a force flag set.
+      if force or not fs.existsSync(fullPath)
+        editor.saveAs(fullPath)
+        return deferred.promise
 
-    deferred.promise
+      throw new CommandError("File exists (add ! to override)")
+
+    # Case 2; no path provided, call editor save.
+    editor = atom.workspace.getActiveTextEditor()
+
+    # Does the current buffer exist?
+    if editor.getPath()? and fs.existsSync(editor.getPath())
+      trySave(-> editor.save()).then(deferred.promise)
+    else
+      # Cant see what the better API is but Pane.saveActiveItemAs() is the only call
+      # I could find that states it will ask the user.
+      trySave(-> atom.workspace.getActivePane().saveActiveItemAs()).then(deferred.promise)
+
+    return deferred.promise
 
   wall: ->
     atom.workspace.saveAll()
