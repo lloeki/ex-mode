@@ -64,7 +64,7 @@ class ExState
   getSelections: ->
     filtered = {}
     for id, selection of @editor.getSelections()
-      unless selection.isEmpty()
+      unless (selection.isEmpty && selection.isEmpty())
         filtered[id] = selection
 
     return filtered
