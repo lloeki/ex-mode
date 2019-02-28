@@ -5,6 +5,7 @@
 # Below is a basic keybinding which registers on all platforms by applying to
 # the root workspace element.
 
+
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 'atom-text-editor.vim-mode-plus:not(.insert-mode)':
