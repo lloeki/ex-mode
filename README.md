@@ -36,26 +36,28 @@ This is the baseline list of commands supported in `ex-mode`.
 
 | Command                                 | Operation                          |
 | --------------------------------------- | ---------------------------------- |
-| `q/quit/tabc/tabclose`                    | Close active tab                   |
-| `qall/quitall`                            | Close all tabs                     |
-| `tabe/tabedit/tabnew`                     | Open new tab                       |
-| `e/edit/tabe/tabedit/tabnew <file>` | Edit given file                    |
-| `tabn/tabnext`                            | Go to next tab                     |
-| `tabp/tabprevious`                        | Go to previous tab                 |
-| `tabo/tabonly`                            | Close other tabs                   |
-| `w/write`                                 | Save active tab                    |
-| `w/write/saveas <file>`             | Save as                            |
-| `wall/wa`                                 | Save all tabs                      |
-| `sp/split`                                | Split window                       |
-| `sp/split <file>`                   | Open file in split window          |
-| `s/substitute`                            | Substitute regular expression in active line                                  |
-| `vsp/vsplit`                              | Vertical split window              |
-| `vsp/vsplit <file>`                 | Open file in vertical split window |
-| `delete`                                  | Cut active line                    |
-| `yank`                                    | Copy active line                   |
-| `set <options>`                     | Set options                        |
-| `sort`                                    | Sort all lines in file             |
-| `sort <line range>`                 | Sort lines in line range           |
+| `q/quit/tabc/tabclose`                  | Close active tab                   |
+| `qall/quitall`                          | Close all tabs                     |
+| `tabe/tabedit/tabnew`                   | Open new tab                       |
+| `e/edit/tabe/tabedit/tabnew <file>`     | Edit given file                    |
+| `tabn/tabnext`                          | Go to next tab                     |
+| `tabp/tabprevious`                      | Go to previous tab                 |
+| `tabfir/tabfirst/tabr/tabrewind`        | Go to the first tab                |
+| `tabl/tablast`                          | Go to the last tab                 |
+| `tabo/tabonly`                          | Close other tabs                   |
+| `w/write`                               | Save active tab                    |
+| `w/write/saveas <file>`                 | Save as                            |
+| `wall/wa`                               | Save all tabs                      |
+| `sp/split`                              | Split window                       |
+| `sp/split <file>`                       | Open file in split window          |
+| `s/substitute`                          | Substitute regular expression in active line |
+| `vsp/vsplit`                            | Vertical split window              |
+| `vsp/vsplit <file>`                     | Open file in vertical split window |
+| `delete`                                | Cut active line                    |
+| `yank`                                  | Copy active line                   |
+| `set <options>`                         | Set options                        |
+| `sort`                                  | Sort all lines in file             |
+| `sort <line range>`                     | Sort lines in line range           |
 
 See `lib/ex.coffee` for the implementations of these commands. Contributions are very welcome!
 
