@@ -173,6 +173,23 @@ class Ex
 
   tabp: => @tabprevious()
 
+  tabrewind: ->
+    pane = atom.workspace.getActivePane()
+    pane.activateItemAtIndex(0)
+
+  tabr: => @tabrewind()
+
+  tabfirst: => @tabrewind()
+
+  tabfir: => @tabrewind()
+
+  tablast: ->
+    pane = atom.workspace.getActivePane()
+    index = pane.getItems().length - 1
+    pane.activateItemAtIndex(index)
+
+  tabl: => @tablast()
+
   tabonly: ->
     tabBar = atom.workspace.getPanes()[0]
     tabBarElement = atom.views.getView(tabBar).querySelector(".tab-bar")

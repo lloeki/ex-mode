@@ -444,6 +444,34 @@ describe "the commands", ->
       submitNormalModeInputText('tabprevious')
       expect(pane.getActiveItemIndex()).toBe(pane.getItems().length - 1)
 
+  describe ":tabfirst", ->
+    pane = null
+    beforeEach ->
+      waitsForPromise ->
+        pane = atom.workspace.getActivePane()
+        atom.workspace.open().then -> atom.workspace.open()
+          .then -> atom.workspace.open()
+
+    it "switches to the first tab", ->
+      pane.activateItemAtIndex(2)
+      openEx()
+      submitNormalModeInputText('tabfirst')
+      expect(pane.getActiveItemIndex()).toBe(0)
+
+  describe ":tablast", ->
+    pane = null
+    beforeEach ->
+      waitsForPromise ->
+        pane = atom.workspace.getActivePane()
+        atom.workspace.open().then -> atom.workspace.open()
+          .then -> atom.workspace.open()
+
+    it "switches to the last tab", ->
+      pane.activateItemAtIndex(0)
+      openEx()
+      submitNormalModeInputText('tablast')
+      expect(pane.getActiveItemIndex()).toBe(2)
+
   describe ":wq", ->
     beforeEach ->
       spyOn(Ex, 'write').andCallThrough()
